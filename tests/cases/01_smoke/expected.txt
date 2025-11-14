@@ -1,0 +1,1 @@
+\[xwtest-smoke] window is viewable
