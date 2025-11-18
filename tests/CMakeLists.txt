@@ -1,3 +1,34 @@
+set(XWTEST_SMOKE_SUPPORT FALSE)
+
+set(_wrap_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/01_smoke/xwindowc_smoke.c")
+if(NOT EXISTS "${_wrap_src}")
+  message(FATAL_ERROR "Missing xwtest smoke source: ${_wrap_src}")
+endif()
+
+set(_xwtest_generated
+  ${UGS_GEN_DIR}/drivers/cursor1.bmp
+  ${UGS_GEN_DIR}/drivers/cursor2.bmp
+  ${UGS_GEN_DIR}/drivers/icon.bmp
+  ${UGS_GEN_DIR}/drivers/rotated.c
+)
+set_source_files_properties(${_xwtest_generated}
+  PROPERTIES GENERATED TRUE
+)
+
+add_executable(xwtest_smoke
+  "${_wrap_src}"
+  ${UGS_GEN_DIR}/drivers/cursor1.bmp
+  ${UGS_GEN_DIR}/drivers/cursor2.bmp
+  ${UGS_GEN_DIR}/drivers/icon.bmp
+  ${UGS_GEN_DIR}/drivers/rotated.c
+)
+add_dependencies(xwtest_smoke prepare_sources)
+target_compile_definitions(xwtest_smoke PRIVATE SELFTEST)
+target_include_directories(xwtest_smoke PRIVATE ${UGS_GEN_DIR}/drivers ${X11_INCLUDE_DIR})
+target_link_libraries(xwtest_smoke PRIVATE ${X11_LIBRARIES} ${X11_Xaw_LIB} ${X11_Xmu_LIB} ${X11_Xt_LIB})
+
+set(XWTEST_SMOKE_SUPPORT TRUE)
+
 set(_xwtest_display "$ENV{DISPLAY}")
 if(DEFINED XWTEST_SMOKE_DISPLAY AND NOT XWTEST_SMOKE_DISPLAY STREQUAL "")
   set(_xwtest_display "${XWTEST_SMOKE_DISPLAY}")

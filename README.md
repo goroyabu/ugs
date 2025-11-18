@@ -7,7 +7,8 @@ This repository wraps the legacy UGS Fortran/C sources in a modern CMake workflo
 ```
 .
 ├─ CMakeLists.txt              # root build definition
-├─ third_party/tarballs/       # place ugs.tar.gz here (Mode B)
+├─ archives/                   # place ugs.tar.gz here (preferred local archive)
+├─ .cache/downloads/           # download cache when NET_FETCH=ON
 ├─ build/                      # out-of-source build tree (generated)
 ├─ vendor/ / generated/        # live under build/, never committed
 ├─ tests/
@@ -22,10 +23,10 @@ All build artifacts stay under `build/` to keep the source tree clean.
 
 ## Archive Acquisition (local + remote fallback)
 
-1. Obtain the upstream archive `ugs.tar.gz` and place it under `third_party/tarballs/`.
+1. Obtain the upstream archive `ugs.tar.gz` and place it under `archives/`.
 2. Alternatively, set `-DUGS_SRC_ARCHIVE=/absolute/path/to/ugs.tar.gz` when running CMake (useful for archives stored elsewhere on the machine).
-3. Hash pinning is mandatory: `UGS_SRC_SHA256` defaults to the known SHA and is validated before extraction.
-4. To allow remote downloads (used only when no local archive is found), configure with `-DNET_FETCH=ON`. The downloaded file is verified and saved back into `third_party/tarballs/`.
+3. When using remote downloads (`NET_FETCH=ON`), hash pinning is required: `UGS_SRC_SHA256` must be set (it defaults to the known SHA) and is used to verify downloaded archives. For purely local archives, hash pinning is optional.
+4. To allow remote downloads (used only when no local archive is found), configure with `-DNET_FETCH=ON`. The downloaded file is verified against `UGS_SRC_SHA256` and stored under `.cache/downloads/` as a cache.
 5. If neither a local archive nor NET_FETCH is available, configuration fails with guidance.
 
 ## Configure, Build, Install
@@ -62,22 +63,20 @@ Display handling:
 
 ## Helper Targets
 
-```
-cmake --build build --target help_targets  # lists helper targets
-cmake --build build --target distclean     # remove build/generated & vendor trees
-cmake --build build --target purge         # distclean + download cache cleanup
-cmake --build build --target uninstall     # run cmake_uninstall.cmake
-```
+The following helper targets are available:
 
-These commands never touch `third_party/tarballs/`.
+```
+cmake --build build --target clean_downloads  # remove download cache(s) under .cache/downloads/
+cmake --build build --target uninstall        # run cmake_uninstall.cmake
+```
 
 ## Troubleshooting
 
 | Symptom | Likely Cause | Resolution |
 |---------|--------------|------------|
-| `UGS source not available` | Archive missing and NET_FETCH=OFF | Place `ugs.tar.gz` under `third_party/tarballs/` or reconfigure with `-DNET_FETCH=ON`. |
+| `UGS source not available` | Archive missing and NET_FETCH=OFF | Place `ugs.tar.gz` under `archives/` or reconfigure with `-DNET_FETCH=ON`. |
 | `SHA256 mismatch` | Archive corrupted / wrong version | Re-download the archive, verify via `shasum -a 256`, update `UGS_SRC_SHA256` only if the upstream checksum changes. |
 | `xwtest_smoke` reports `Cannot open display` | DISPLAY unset or inaccessible | Export a valid DISPLAY, use `-DXWTEST_SMOKE_DISPLAY`, or run tests under `xvfb-run`. |
 | Missing X11 headers/libs | X development packages not installed | Install X11 dev packages (e.g., `xorg-dev`, `libX11-dev`, or XQuartz on macOS). |
 
-With the archive pinned and DISPLAY configured, `cmake --build build --target test` should pass and `cmake --install build --prefix ...` installs `libugs.a` plus optional `xwtest` binaries.
+With the archive available and DISPLAY configured, `cmake --build build --target test` should pass and `cmake --install build --prefix ...` installs `libugs.a` plus optional `xwtest` binaries.

@@ -1,0 +1,42 @@
+# Example usage in CMakeLists.txt:
+#   configure_file("${CMAKE_SOURCE_DIR}/cmake/Uninstall.cmake.in"
+#                  "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
+#   add_custom_target(uninstall
+#     COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake")
+#   # When versioning is required (optional): no additional steps needed.
+
+if(NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: \"@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt\"")
+endif()
+
+file(READ "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" _files)
+string(REGEX REPLACE "\n" ";" _files "${_files}")
+
+set(_index 0)
+foreach(_file ${_files})
+  if(EXISTS "$ENV{DESTDIR}${_file}")
+    message(STATUS "Looking for \"$ENV{DESTDIR}${_file}\" - found")
+    set(_uninstall_check_${_index} 1)
+  else()
+    message(STATUS "Looking for \"$ENV{DESTDIR}${_file}\" - not found")
+    set(_uninstall_check_${_index} 0)
+  endif()
+  math(EXPR _index "1 + ${_index}")
+endforeach()
+
+set(_index 0)
+foreach(_file ${_files})
+  if(_uninstall_check_${_index})
+    message(STATUS "Uninstalling \"$ENV{DESTDIR}${_file}\"")
+    execute_process(
+      COMMAND "@CMAKE_COMMAND@" -E remove "$ENV{DESTDIR}${_file}"
+      RESULT_VARIABLE _rm_retval
+    )
+    if(NOT "${_rm_retval}" STREQUAL 0)
+      message(FATAL_ERROR "Problem when removing \"$ENV{DESTDIR}${_file}\"")
+    endif()
+  endif()
+  math(EXPR _index "1 + ${_index}")
+endforeach()
+
+file(REMOVE "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
