@@ -1,0 +1,35 @@
+name: GUI Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 18 * * 0"
+
+jobs:
+  gui-smoke:
+    name: GUI smoke (ubuntu-latest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gfortran \
+            libx11-dev \
+            libxaw7-dev \
+            libxmu-dev \
+            libxt-dev \
+            xvfb
+
+      - name: Configure
+        run: cmake -S . -B build -DNET_FETCH=ON -DBUILD_TESTING=ON -DUGS_ENABLE_GUI_SMOKE=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run GUI smoke
+        run: xvfb-run --auto-servernum ctest --test-dir build -R '^01_smoke$' --output-on-failure
