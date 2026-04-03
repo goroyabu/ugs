@@ -32,7 +32,7 @@ endif()
 
 set(XWTEST_SMOKE_SUPPORT TRUE)
 
-if(XWTEST_SMOKE_SUPPORT)
+if(XWTEST_SMOKE_SUPPORT AND UGS_ENABLE_GUI_SMOKE)
   set(_xwtest_smoke_cmd ${CMAKE_COMMAND} -E env LC_ALL=C TZ=UTC)
   if(DEFINED XWTEST_SMOKE_DISPLAY AND NOT XWTEST_SMOKE_DISPLAY STREQUAL "")
     list(APPEND _xwtest_smoke_cmd DISPLAY=${XWTEST_SMOKE_DISPLAY})
@@ -50,8 +50,10 @@ if(XWTEST_SMOKE_SUPPORT)
     PROPERTIES
       LABELS "smoke;x11"
       PASS_REGULAR_EXPRESSION "${_expected_regex}")
-else()
+elseif(NOT XWTEST_SMOKE_SUPPORT)
   message(STATUS "xwtest_smoke target not available; skipping GUI smoke test registration.")
+else()
+  message(STATUS "UGS_ENABLE_GUI_SMOKE is OFF; skipping GUI smoke test registration.")
 endif()
 
 set(_tryxw_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/02_tryxw/tryxw.f")

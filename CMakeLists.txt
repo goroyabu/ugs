@@ -16,9 +16,10 @@ option(BUILD_TESTING "Enable building and running tests" ON)
 
 option(UGS_BUILD_XWTEST       "Build the legacy xwtest sample program" OFF)
 option(UGS_F77_COMPAT "Enable legacy F77 calling convention compatibility (e.g., allow argument mismatch for %VAL-style calls)" ON)
+option(UGS_ENABLE_GUI_SMOKE "Register the GUI/X11 smoke test case 01_smoke" ON)
 
 set(PACKAGE_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-set(XWTEST_SMOKE_DISPLAY "0" CACHE STRING "Override DISPLAY when running the xwtest_smoke ctest (empty = inherit from environment)")
+set(XWTEST_SMOKE_DISPLAY "" CACHE STRING "Override DISPLAY when running the xwtest_smoke ctest (empty = inherit from environment)")
 string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
 
 # ------------------------------------------------------------

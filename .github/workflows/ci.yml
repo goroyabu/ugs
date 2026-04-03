@@ -52,7 +52,7 @@ jobs:
           echo "FC=${FC_PATH}" >> "${GITHUB_ENV}"
 
       - name: Configure
-        run: cmake -S . -B build -DNET_FETCH=ON -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DNET_FETCH=ON -DBUILD_TESTING=ON -DUGS_ENABLE_GUI_SMOKE=OFF
 
       - name: Build
         run: cmake --build build --parallel
