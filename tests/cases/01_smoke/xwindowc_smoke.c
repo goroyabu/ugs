@@ -513,8 +513,8 @@ void fxloop_()
 #ifdef SELFTEST
 int main(int argc, char **argv)
 {
-    int width = 1000;
-    int height = 750;
+    int width;
+    int height;
     Display *display;
     Window window;
     XWindowAttributes attr;
@@ -529,7 +529,15 @@ int main(int argc, char **argv)
     }
 
     printf("[xwtest-smoke] opening display\n");
-    fxopen_(&width, &height);
+    width = 1000;
+    height = 750;
+    for (attempt = 0; attempt < XWTEST_MAX_ATTEMPTS; ++attempt) {
+        fxopen_(&width, &height);
+        if (width != 0 && height != 0) {
+            break;
+        }
+        usleep(XWTEST_SLEEP_USEC);
+    }
     if (width == 0 || height == 0) {
         fprintf(stderr, "[xwtest-smoke] Cannot open display\n");
         return XWTEST_SMOKE_ERR_DISPLAY;
