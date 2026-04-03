@@ -10,12 +10,16 @@ This repository wraps the legacy UGS Fortran/C sources in a modern CMake workflo
 ├─ archives/                   # place ugs.tar.gz here (preferred local archive)
 ├─ .cache/downloads/           # download cache when NET_FETCH=ON
 ├─ build/                      # out-of-source build tree (generated)
-├─ vendor/ / generated/        # live under build/, never committed
+├─ build/vendor/               # extracted upstream sources, never committed
+├─ build/generated/            # patched/generated sources and assets
 ├─ tests/
 │  ├─ CMakeLists.txt           # registers ctest entries
-│  └─ cases/01_smoke/
-│      ├─ xwindowc_smoke.c     # GUI smoke harness, compiled when enabled
-│      └─ expected.txt         # regex checked against xwtest_smoke output
+│  └─ cases/
+│     ├─ 01_smoke/
+│     │  ├─ xwindowc_smoke.c   # GUI smoke harness, compiled when enabled
+│     │  └─ expected.txt       # regex checked against xwtest_smoke output
+│     └─ 02_tryxw/
+│        └─ tryxw.f            # Fortran smoke input used by the 02_tryxw test
 └─ README.md
 ```
 
@@ -24,10 +28,9 @@ All build artifacts stay under `build/` to keep the source tree clean.
 ## Archive Acquisition (local + remote fallback)
 
 1. Obtain the upstream archive `ugs.tar.gz` and place it under `archives/`.
-2. Alternatively, set `-DUGS_SRC_ARCHIVE=/absolute/path/to/ugs.tar.gz` when running CMake (useful for archives stored elsewhere on the machine).
-3. When using remote downloads (`NET_FETCH=ON`), hash pinning is required: `UGS_SRC_SHA256` must be set (it defaults to the known SHA) and is used to verify downloaded archives. For purely local archives, hash pinning is optional.
-4. To allow remote downloads (used only when no local archive is found), configure with `-DNET_FETCH=ON`. The downloaded file is verified against `UGS_SRC_SHA256` and stored under `.cache/downloads/` as a cache.
-5. If neither a local archive nor NET_FETCH is available, configuration fails with guidance.
+2. When using remote downloads (`NET_FETCH=ON`), hash pinning is required: `UGS_SRC_SHA256` must be set (it defaults to the known SHA) and is used to verify downloaded archives.
+3. To allow remote downloads (used only when no local archive is found), configure with `-DNET_FETCH=ON`. The downloaded file is verified against `UGS_SRC_SHA256` and stored under `.cache/downloads/` as a cache.
+4. If neither a local archive nor NET_FETCH is available, configuration fails with guidance.
 
 ## Configure, Build, Install
 
@@ -47,13 +50,16 @@ Key options:
 
 ## Tests
 
-Tests are managed with CTest. The main smoke test builds and runs `xwtest_smoke`, which opens an X11 window and waits until it becomes viewable. Its output must match `tests/cases/01_smoke/expected.txt`.
+Tests are managed with CTest. `01_smoke` builds and runs `xwtest_smoke`, which opens an X11 window and waits until it becomes viewable. Its output must match `tests/cases/01_smoke/expected.txt`. `02_tryxw` builds the Fortran smoke input from `tests/cases/02_tryxw/tryxw.f` and exercises the UGS API through the XWINDOW driver. `package_smoke` installs the project into a temporary prefix and verifies that a downstream CMake project can consume it via `find_package(ugs)`.
 
 Run tests:
 ```bash
 cmake --build build --target test
 # or
 ctest --test-dir build -L smoke --output-on-failure
+ctest --test-dir build -R '^01_smoke$' --output-on-failure
+ctest --test-dir build -R '^02_tryxw$' --output-on-failure
+ctest --test-dir build -L package --output-on-failure
 ```
 
 Display handling:

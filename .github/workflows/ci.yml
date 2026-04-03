@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Build and test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            run_x11_smoke: true
+          - os: macos-latest
+            run_x11_smoke: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gfortran \
+            libx11-dev \
+            libxaw7-dev \
+            libxmu-dev \
+            libxt-dev \
+            xvfb
+
+      - name: Install macOS dependencies
+        if: matrix.os == 'macos-latest'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          brew install gcc libx11 libxaw libxmu libxt
+          BREW_PREFIX="$(brew --prefix)"
+          FC_PATH="$(brew --prefix)/bin/gfortran-15"
+          echo "CMAKE_PREFIX_PATH=${BREW_PREFIX}" >> "${GITHUB_ENV}"
+          echo "PKG_CONFIG_PATH=${BREW_PREFIX}/lib/pkgconfig:${BREW_PREFIX}/share/pkgconfig" >> "${GITHUB_ENV}"
+          echo "CPPFLAGS=-I${BREW_PREFIX}/include" >> "${GITHUB_ENV}"
+          echo "LDFLAGS=-L${BREW_PREFIX}/lib" >> "${GITHUB_ENV}"
+          echo "FC=${FC_PATH}" >> "${GITHUB_ENV}"
+
+      - name: Configure
+        run: cmake -S . -B build -DNET_FETCH=ON -DBUILD_TESTING=ON -DUGS_ENABLE_GUI_SMOKE=OFF
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test package smoke
+        run: ctest --test-dir build -L package --output-on-failure
+
+      - name: Test X11 smoke
+        if: matrix.run_x11_smoke
+        run: xvfb-run --auto-servernum ctest --test-dir build -L smoke --output-on-failure
+
+      - name: Install
+        run: cmake --install build --prefix "${{ github.workspace }}/stage"
+
+      - name: Verify installed package with find_package
+        run: |
+          cmake -S tests/package_smoke -B build/package_smoke \
+            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/stage"
+          cmake --build build/package_smoke --parallel
