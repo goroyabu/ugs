@@ -50,6 +50,24 @@ function(_copy_if_exists relpath)
   endif()
 endfunction()
 
+function(_generate_xwtest_source)
+  set(in "${UGS_SOURCE_TREE}/drivers/xwindowc.c")
+  set(out "${UGS_GEN_DIR}/drivers/xwindowc_selftest.c")
+  if(NOT EXISTS "${in}")
+    message(STATUS "(skip) missing in upstream: drivers/xwindowc.c")
+    return()
+  endif()
+
+  file(READ "${in}" _content)
+  string(REPLACE "UGSYSTEM:" "UGSYSTEM_" _content "${_content}")
+  string(REGEX REPLACE "INTEGER\\*2[ ]+CHC" "CHARACTER*2     CHC" _content "${_content}")
+  string(REPLACE "main ()" "void main ()" _content "${_content}")
+
+  get_filename_component(_outdir "${out}" DIRECTORY)
+  file(MAKE_DIRECTORY "${_outdir}")
+  file(WRITE "${out}" "${_content}")
+endfunction()
+
 function(_copy_ugsystem_files base_subdir)
   foreach(oldfile
     UGC00CBK.FOR UGD00CBK.FOR UGDDACBK.FOR UGE00CBK.FOR UGEMSCBK.FOR UGERRCBK.FOR
@@ -127,6 +145,7 @@ endforeach()
 
 _copy_ugsystem_files("")
 _copy_ugsystem_files("drivers")
+_generate_xwtest_source()
 
 _copy_asset_if_exists(drivers/cursor1.bmp)
 _copy_asset_if_exists(drivers/cursor2.bmp)
@@ -153,4 +172,3 @@ if(NOT EXISTS "${_def_out}")
     file(WRITE "${_def_out}" "/* Auto-generated fallback: defaults.h */\n#ifndef UGS_DEFAULTS_H\n#define UGS_DEFAULTS_H\n#endif\n")
   endif()
 endif()
-

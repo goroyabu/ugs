@@ -167,11 +167,7 @@ CTestTestfile.cmake
 
 # macOS extras (保険)
 .DS_Store
-# Do not publish upstream snapshots
-third_party/f2c/**
-!third_party/f2c/README.vendoring.md
-
 # If you keep tarballs locally, do not publish them either
-third_party/tarballs/
+archives/
 
 AGENTS.md

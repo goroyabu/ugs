@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(ugs VERSION 0.1 LANGUAGES C Fortran)
+project(ugs VERSION 0.1.0 LANGUAGES C Fortran)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -24,22 +24,22 @@ string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
 # ------------------------------------------------------------
 # Layout / Source acquisition (using helper)
 # ------------------------------------------------------------
-set(UGS_URL          "http://ftp.riken.jp/iris/ugs/ugs.tar.gz")
-set(UGS_ARCHIVE_NAME "ugs.tar.gz")
+set(VENDOR_ROOT "${CMAKE_BINARY_DIR}/vendor")
+set(GEN_DIR     "${CMAKE_BINARY_DIR}/generated")
+
+set(UGS_SRC_ROOT "${VENDOR_ROOT}/ugs")
+set(UGS_SRC_URL  "http://ftp.riken.jp/iris/ugs/ugs.tar.gz")
 set(UGS_SRC_SHA256 "27bc46e975917bdf149e9ff6997885ffa24b0b1416bdf82ffaea5246b36e1f83"
     CACHE STRING "Pinned SHA256 for the upstream ugs.tar.gz archive")
-set(UGS_SRC_ARCHIVE "" CACHE FILEPATH "Optional override path to a pre-downloaded ugs.tar.gz archive")
-set(UGS_VENDOR_ROOT "${CMAKE_BINARY_DIR}/vendor")
-set(UGS_SRC_DIR     "${UGS_VENDOR_ROOT}/ugs")
-set(UGS_GEN_DIR     "${CMAKE_BINARY_DIR}/generated")
+set(UGS_SRC_LOCAL   "${ARCHIVE_DIR}/ugs.tar.gz")
 
-resolve_input_file(UGS_ARCHIVE_PATH "${UGS_URL}" "${UGS_SRC_SHA256}" "${UGS_SRC_ARCHIVE}")
-add_unpack_archive("${UGS_SRC_DIR}.stamp" "${UGS_VENDOR_ROOT}" "${UGS_ARCHIVE_PATH}"
+resolve_input_file(UGS_SRC_TGZ "${UGS_SRC_URL}" "${UGS_SRC_SHA256}" "${UGS_SRC_LOCAL}")
+add_unpack_archive("${UGS_SRC_ROOT}.stamp" "${VENDOR_ROOT}" "${UGS_SRC_TGZ}"
   COMMENT "Unpacking UGS sources"
   COMMAND ${CMAKE_COMMAND} -E tar xzf)
 add_unpack_target(unpack)
 
-set(UGS_SOURCE_TREE "${UGS_SRC_DIR}/src.2.10e")
+set(UGS_SOURCE_TREE "${UGS_SRC_ROOT}/src.2.10e")
 
 # ------------------------------------------------------------
 # Enumerate sources
@@ -74,7 +74,7 @@ set(UGS_SOURCE_NAMES
 )
 
 foreach(src_name IN LISTS UGS_SOURCE_NAMES)
-  # sources will be generated into UGS_GEN_DIR at build time
+  # sources will be generated into GEN_DIR at build time
 endforeach()
 
 # ------------------------------------------------------------
@@ -84,14 +84,15 @@ find_package(X11 REQUIRED)
 
 set(UGS_SOURCE_PATHS)
 foreach(src_name IN LISTS UGS_SOURCE_NAMES)
-  list(APPEND UGS_SOURCE_PATHS "${UGS_GEN_DIR}/${src_name}")
+  list(APPEND UGS_SOURCE_PATHS "${GEN_DIR}/${src_name}")
 endforeach()
 
 set(UGS_GENERATED_EXTRA
-  ${UGS_GEN_DIR}/drivers/cursor1.bmp
-  ${UGS_GEN_DIR}/drivers/cursor2.bmp
-  ${UGS_GEN_DIR}/drivers/icon.bmp
-  ${UGS_GEN_DIR}/drivers/rotated.c
+  ${GEN_DIR}/drivers/cursor1.bmp
+  ${GEN_DIR}/drivers/cursor2.bmp
+  ${GEN_DIR}/drivers/icon.bmp
+  ${GEN_DIR}/drivers/rotated.c
+  ${GEN_DIR}/drivers/xwindowc_selftest.c
 )
 
 set_source_files_properties(${UGS_SOURCE_PATHS} ${UGS_GENERATED_EXTRA}
@@ -99,18 +100,18 @@ set_source_files_properties(${UGS_SOURCE_PATHS} ${UGS_GENERATED_EXTRA}
 )
 
 add_custom_command(
-  OUTPUT "${UGS_GEN_DIR}/prepare_sources.stamp"
+  OUTPUT "${GEN_DIR}/prepare_sources.stamp"
   COMMAND ${CMAKE_COMMAND}
     -DUGS_SOURCE_TREE="${UGS_SOURCE_TREE}"
-    -DUGS_GEN_DIR="${UGS_GEN_DIR}"
+    -DUGS_GEN_DIR="${GEN_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrepareUgsSources.cmake"
-  COMMAND ${CMAKE_COMMAND} -E touch "${UGS_GEN_DIR}/prepare_sources.stamp"
-  DEPENDS "${UGS_SOURCE_TREE}"
+  COMMAND ${CMAKE_COMMAND} -E touch "${GEN_DIR}/prepare_sources.stamp"
+  DEPENDS "${UGS_SRC_ROOT}.stamp"
   COMMENT "Preparing patched/generated UGS sources"
 )
 
 add_custom_target(prepare_sources
-  DEPENDS "${UGS_GEN_DIR}/prepare_sources.stamp"
+  DEPENDS "${GEN_DIR}/prepare_sources.stamp"
 )
 
 add_library(${PROJECT_NAME} STATIC ${UGS_SOURCE_PATHS})
@@ -138,34 +139,24 @@ if(_f77_compat_flags)
   target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:${_f77_compat_flags}>)
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${UGS_GEN_DIR}/drivers ${X11_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${GEN_DIR}/drivers ${X11_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME}
   PRIVATE ${X11_LIBRARIES} ${X11_Xaw_LIB} ${X11_Xmu_LIB} ${X11_Xt_LIB}
 )
 
 if(UGS_BUILD_XWTEST)
-  set(_in_xwin "${UGS_SOURCE_TREE}/drivers/xwindowc.c")
-  set(_out_dir "${CMAKE_BINARY_DIR}/xwtest_src")
-  set(_out_xwin "${_out_dir}/xwindowc.c")
-  file(MAKE_DIRECTORY "${_out_dir}")
-  if(EXISTS "${_in_xwin}")
-    file(READ "${_in_xwin}" _xw)
-    string(REPLACE "main" "void main" _xw "${_xw}")
-    file(WRITE "${_out_xwin}" "${_xw}")
-  else()
-    message(FATAL_ERROR "Missing driver source: ${_in_xwin}")
-  endif()
+  set(_out_xwin "${GEN_DIR}/drivers/xwindowc_selftest.c")
 
   add_executable(xwtest
     "${_out_xwin}"
-    ${UGS_GEN_DIR}/drivers/cursor1.bmp
-    ${UGS_GEN_DIR}/drivers/cursor2.bmp
-    ${UGS_GEN_DIR}/drivers/icon.bmp
-    ${UGS_GEN_DIR}/drivers/rotated.c
+    ${GEN_DIR}/drivers/cursor1.bmp
+    ${GEN_DIR}/drivers/cursor2.bmp
+    ${GEN_DIR}/drivers/icon.bmp
+    ${GEN_DIR}/drivers/rotated.c
   )
   add_dependencies(xwtest prepare_sources)
   target_compile_options(xwtest PRIVATE -DSELFTEST)
-  target_include_directories(xwtest PRIVATE ${UGS_GEN_DIR}/drivers ${X11_INCLUDE_DIR})
+  target_include_directories(xwtest PRIVATE ${GEN_DIR}/drivers ${X11_INCLUDE_DIR})
   target_link_libraries(xwtest PRIVATE ${X11_LIBRARIES} ${X11_Xaw_LIB} ${X11_Xmu_LIB} ${X11_Xt_LIB})
   install(TARGETS xwtest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
