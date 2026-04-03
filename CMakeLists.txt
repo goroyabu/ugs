@@ -60,8 +60,8 @@ set(UGS_SOURCE_NAMES
   ugz002.f ugz003.f ugz006.f uge002.F ugfrev.F uggetv.F ugopen.F ugz005.F
   bit/btest.c bit/iand.c bit/ibclr.c bit/ibset.c bit/ior.c bit/ishft.c bit/ishftc.c
   drivers/epsf.f drivers/postscr.f drivers/rotated.c
-  drivers/tek4010.f drivers/xwindow.f drivers/xwindowc.c
-  dummies/postscr.f dummies/tek4010.f dummies/ugcw01.f dummies/uggd01.f dummies/uggi01.f
+  drivers/xwindow.f drivers/xwindowc.c
+  dummies/ugcw01.f dummies/uggd01.f dummies/uggi01.f
   dummies/uggks_dummy.f dummies/uggr01.f dummies/uggs01.f dummies/ugin01.f dummies/ugix01.f
   dummies/ugmt01.f dummies/ugpi01.f dummies/ugpl01.f dummies/ugpm01.f dummies/ugps01.f
   dummies/ugpu01.f dummies/ugpx01.f dummies/ugqm01.f dummies/ugsa01.f dummies/ugsb01.f
@@ -70,7 +70,7 @@ set(UGS_SOURCE_NAMES
   dummies/uguis_dummy.f dummies/ugus01.f dummies/ugux01.f dummies/ugvf01.f dummies/ugvi01.f
   dummies/ugvs01.f dummies/ugwa01.f dummies/ugwb01.f dummies/ugwc01.f dummies/ugwd01.f
   dummies/ugwe01.f dummies/ugwz01.f dummies/ugxa01.f dummies/ugxb01.f dummies/ugxc01.f
-  dummies/ugxs01.f dummies/ugzz01.f dummies/x-window.f
+  dummies/ugxs01.f dummies/ugzz01.f
 )
 
 foreach(src_name IN LISTS UGS_SOURCE_NAMES)
