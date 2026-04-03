@@ -7,7 +7,7 @@ on:
 
 jobs:
   gui-smoke:
-    name: GUI smoke (ubuntu-latest)
+    name: GUI smoke diagnostics (ubuntu-latest)
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,8 @@ jobs:
             libxaw7-dev \
             libxmu-dev \
             libxt-dev \
-            xvfb
+            xvfb \
+            x11-utils
 
       - name: Configure
         run: cmake -S . -B build -DNET_FETCH=ON -DBUILD_TESTING=ON -DUGS_ENABLE_GUI_SMOKE=ON
@@ -31,5 +32,27 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Run GUI smoke
+      - name: Inspect registered GUI smoke test
+        run: ctest --test-dir build -N -R '^01_smoke$'
+
+      - name: Run GUI smoke binary directly
+        run: xvfb-run --auto-servernum ./build/tests/xwtest_smoke
+
+      - name: Run GUI smoke via CTest
         run: xvfb-run --auto-servernum ctest --test-dir build -R '^01_smoke$' --output-on-failure
+
+      - name: Dump GUI diagnostics on failure
+        if: failure()
+        run: |
+          env | sort | grep -E '^(DISPLAY|XAUTHORITY|HOME|USER)=' || true
+          xvfb-run --auto-servernum xdpyinfo || true
+          test -f build/Testing/Temporary/LastTest.log && cat build/Testing/Temporary/LastTest.log || true
+          test -f build/Testing/Temporary/LastTestsFailed.log && cat build/Testing/Temporary/LastTestsFailed.log || true
+
+      - name: Upload GUI smoke logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-smoke-logs
+          path: |
+            build/Testing/Temporary
