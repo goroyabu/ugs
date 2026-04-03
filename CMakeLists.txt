@@ -81,6 +81,10 @@ endforeach()
 # Targets
 # ------------------------------------------------------------
 find_package(X11 REQUIRED)
+set(MATH_LIB "")
+if(NOT APPLE)
+  find_library(MATH_LIB m)
+endif()
 
 set(UGS_SOURCE_PATHS)
 foreach(src_name IN LISTS UGS_SOURCE_NAMES)
@@ -143,6 +147,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GEN_DIR}/drivers ${X11_INCL
 target_link_libraries(${PROJECT_NAME}
   PRIVATE ${X11_LIBRARIES} ${X11_Xaw_LIB} ${X11_Xmu_LIB} ${X11_Xt_LIB}
 )
+if(MATH_LIB)
+  target_link_libraries(${PROJECT_NAME} PRIVATE ${MATH_LIB})
+endif()
 
 if(UGS_BUILD_XWTEST)
   set(_out_xwin "${GEN_DIR}/drivers/xwindowc_selftest.c")
@@ -158,6 +165,9 @@ if(UGS_BUILD_XWTEST)
   target_compile_options(xwtest PRIVATE -DSELFTEST)
   target_include_directories(xwtest PRIVATE ${GEN_DIR}/drivers ${X11_INCLUDE_DIR})
   target_link_libraries(xwtest PRIVATE ${X11_LIBRARIES} ${X11_Xaw_LIB} ${X11_Xmu_LIB} ${X11_Xt_LIB})
+  if(MATH_LIB)
+    target_link_libraries(xwtest PRIVATE ${MATH_LIB})
+  endif()
   install(TARGETS xwtest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 

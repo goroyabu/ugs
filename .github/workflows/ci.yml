@@ -44,10 +44,12 @@ jobs:
         run: |
           brew install gcc libx11 libxaw libxmu libxt
           BREW_PREFIX="$(brew --prefix)"
+          FC_PATH="$(brew --prefix)/bin/gfortran-15"
           echo "CMAKE_PREFIX_PATH=${BREW_PREFIX}" >> "${GITHUB_ENV}"
           echo "PKG_CONFIG_PATH=${BREW_PREFIX}/lib/pkgconfig:${BREW_PREFIX}/share/pkgconfig" >> "${GITHUB_ENV}"
           echo "CPPFLAGS=-I${BREW_PREFIX}/include" >> "${GITHUB_ENV}"
           echo "LDFLAGS=-L${BREW_PREFIX}/lib" >> "${GITHUB_ENV}"
+          echo "FC=${FC_PATH}" >> "${GITHUB_ENV}"
 
       - name: Configure
         run: cmake -S . -B build -DNET_FETCH=ON -DBUILD_TESTING=ON
