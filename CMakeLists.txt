@@ -88,6 +88,13 @@ foreach(src_name IN LISTS UGS_SOURCE_NAMES)
   list(APPEND UGS_SOURCE_PATHS "${GEN_DIR}/${src_name}")
 endforeach()
 
+set(_ugs_fixed_form_sources)
+foreach(src_path IN LISTS UGS_SOURCE_PATHS)
+  if(src_path MATCHES "\\.f$")
+    list(APPEND _ugs_fixed_form_sources "${src_path}")
+  endif()
+endforeach()
+
 set(UGS_GENERATED_EXTRA
   ${GEN_DIR}/drivers/cursor1.bmp
   ${GEN_DIR}/drivers/cursor2.bmp
@@ -99,6 +106,11 @@ set(UGS_GENERATED_EXTRA
 set_source_files_properties(${UGS_SOURCE_PATHS} ${UGS_GENERATED_EXTRA}
   PROPERTIES GENERATED TRUE
 )
+if(_ugs_fixed_form_sources)
+  set_source_files_properties(${_ugs_fixed_form_sources}
+    PROPERTIES Fortran_PREPROCESS OFF
+  )
+endif()
 
 add_custom_command(
   OUTPUT "${GEN_DIR}/prepare_sources.stamp"
