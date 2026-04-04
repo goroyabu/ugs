@@ -41,6 +41,9 @@ jobs:
       - name: Run GUI smoke via CTest
         run: xvfb-run --auto-servernum ctest --test-dir build -R '^01_smoke$' --output-on-failure
 
+      - name: Run visual smoke via CTest
+        run: xvfb-run --auto-servernum ctest --test-dir build -R '^03_visual_smoke$' --output-on-failure
+
       - name: Dump GUI diagnostics on failure
         if: failure()
         run: |
@@ -56,3 +59,4 @@ jobs:
           name: gui-smoke-logs
           path: |
             build/Testing/Temporary
+            build/test-artifacts

@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <signal.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -98,6 +100,111 @@ void  fxstyle_  (int width , int style);
 void  fxreset_  (void);
 void  start_rubber_band(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
 void  checkEventQueue (void);
+static unsigned int xwtest_mask_shift(unsigned long mask);
+static unsigned int xwtest_mask_bits(unsigned long mask);
+static unsigned char xwtest_scale_component(unsigned long value, unsigned int bits);
+static int xwtest_dump_window_ppm(const char *path, Window window, unsigned int width, unsigned int height);
+
+static unsigned int xwtest_mask_shift(unsigned long mask)
+{
+    unsigned int shift = 0;
+
+    if (mask == 0UL) {
+        return 0;
+    }
+    while ((mask & 1UL) == 0UL) {
+        mask >>= 1;
+        ++shift;
+    }
+    return shift;
+}
+
+static unsigned int xwtest_mask_bits(unsigned long mask)
+{
+    unsigned int bits = 0;
+
+    while (mask != 0UL) {
+        bits += (unsigned int)(mask & 1UL);
+        mask >>= 1;
+    }
+    return bits;
+}
+
+static unsigned char xwtest_scale_component(unsigned long value, unsigned int bits)
+{
+    unsigned long max_value;
+
+    if (bits == 0U) {
+        return 0;
+    }
+    max_value = (1UL << bits) - 1UL;
+    if (max_value == 0UL) {
+        return 0;
+    }
+    return (unsigned char)((value * 255UL + max_value / 2UL) / max_value);
+}
+
+static int xwtest_dump_window_ppm(const char *path, Window window, unsigned int width, unsigned int height)
+{
+    FILE *fp;
+    XImage *image;
+    Visual *visual;
+    unsigned int red_shift, green_shift, blue_shift;
+    unsigned int red_bits, green_bits, blue_bits;
+    unsigned int x, y;
+
+    fp = fopen(path, "wb");
+    if (fp == NULL) {
+        perror("[xwtest-smoke] fopen");
+        return -1;
+    }
+
+    XSync(dpy, False);
+    image = XGetImage(dpy, window, 0, 0, width, height, AllPlanes, ZPixmap);
+    if (image == NULL) {
+        fclose(fp);
+        fprintf(stderr, "[xwtest-smoke] failed to capture window image\n");
+        return -1;
+    }
+
+    visual = DefaultVisual(dpy, scr);
+    red_shift = xwtest_mask_shift(visual->red_mask);
+    green_shift = xwtest_mask_shift(visual->green_mask);
+    blue_shift = xwtest_mask_shift(visual->blue_mask);
+    red_bits = xwtest_mask_bits(visual->red_mask >> red_shift);
+    green_bits = xwtest_mask_bits(visual->green_mask >> green_shift);
+    blue_bits = xwtest_mask_bits(visual->blue_mask >> blue_shift);
+
+    fprintf(fp, "P6\n%u %u\n255\n", width, height);
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            unsigned long pixel;
+            unsigned long red_value;
+            unsigned long green_value;
+            unsigned long blue_value;
+            unsigned char rgb[3];
+
+            pixel = XGetPixel(image, (int)x, (int)y);
+            red_value = (pixel & visual->red_mask) >> red_shift;
+            green_value = (pixel & visual->green_mask) >> green_shift;
+            blue_value = (pixel & visual->blue_mask) >> blue_shift;
+            rgb[0] = xwtest_scale_component(red_value, red_bits);
+            rgb[1] = xwtest_scale_component(green_value, green_bits);
+            rgb[2] = xwtest_scale_component(blue_value, blue_bits);
+
+            if (fwrite(rgb, sizeof(rgb), 1, fp) != 1) {
+                XDestroyImage(image);
+                fclose(fp);
+                fprintf(stderr, "[xwtest-smoke] failed while writing ppm data\n");
+                return -1;
+            }
+        }
+    }
+
+    XDestroyImage(image);
+    fclose(fp);
+    return 0;
+}
 
 /* Entry point from Fortran: initialize X11/Xt and create the window. */
 void fxopen_ (int *xsiz, int *ysiz )
@@ -521,10 +628,13 @@ int main(int argc, char **argv)
     int attempt;
     int hold_window = 0;
     int i;
+    const char *capture_path = NULL;
 
     for (i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--hold") == 0) {
             hold_window = 1;
+        } else if (strcmp(argv[i], "--capture") == 0 && i + 1 < argc) {
+            capture_path = argv[++i];
         }
     }
 
@@ -599,6 +709,14 @@ int main(int argc, char **argv)
             fxpoly_(&i, px, py);
 
             fxdraw_();
+
+            if (capture_path != NULL) {
+                if (xwtest_dump_window_ppm(capture_path, window, attr.width, attr.height) != 0) {
+                    fxclose_();
+                    return XWTEST_SMOKE_ERR_VIEWABLE;
+                }
+                printf("[xwtest-smoke] wrote capture to %s\n", capture_path);
+            }
 
             if (hold_window) {
                 fxpause_();
