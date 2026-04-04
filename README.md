@@ -18,8 +18,11 @@ This repository wraps the legacy UGS Fortran/C sources in a modern CMake workflo
 │     ├─ 01_smoke/
 │     │  ├─ xwindowc_smoke.c   # GUI smoke harness, compiled when enabled
 │     │  └─ expected.txt       # regex checked against xwtest_smoke output
-│     └─ 02_tryxw/
-│        └─ tryxw.f            # Fortran smoke input used by the 02_tryxw test
+│     ├─ 02_tryxw/
+│     │  └─ tryxw.f            # Fortran smoke input used by the 02_tryxw test
+│     └─ 03_visual_smoke/
+│        ├─ expected.ppm       # golden image for the captured X11 output
+│        └─ run_visual_smoke.cmake
 └─ README.md
 ```
 
@@ -50,9 +53,9 @@ Key options:
 
 ## Tests
 
-Tests are managed with CTest. `01_smoke` builds and runs `xwtest_smoke`, which opens an X11 window and waits until it becomes viewable. Its output must match `tests/cases/01_smoke/expected.txt`. `02_tryxw` builds the Fortran smoke input from `tests/cases/02_tryxw/tryxw.f` and exercises the UGS API through the XWINDOW driver. `package_smoke` installs the project into a temporary prefix and verifies that a downstream CMake project can consume it via `find_package(ugs)`.
+Tests are managed with CTest. `01_smoke` builds and runs `xwtest_smoke`, which opens an X11 window and waits until it becomes viewable. Its output must match `tests/cases/01_smoke/expected.txt`. `02_tryxw` builds the Fortran smoke input from `tests/cases/02_tryxw/tryxw.f` and exercises the UGS API through the XWINDOW driver. `03_visual_smoke` uses the same X11 harness to capture a rendered frame and compares it against `tests/cases/03_visual_smoke/expected.ppm`. `package_smoke` installs the project into a temporary prefix and verifies that a downstream CMake project can consume it via `find_package(ugs)`.
 
-The default pull-request CI keeps `UGS_ENABLE_GUI_SMOKE=OFF`, so the standard matrix runs `02_tryxw` and `package_smoke` but does not require `01_smoke`. The GUI case remains available locally and through `.github/workflows/gui-smoke.yml`, which is intended as a non-blocking diagnostic workflow rather than a required PR gate.
+The default pull-request CI keeps `UGS_ENABLE_GUI_SMOKE=OFF`, so the standard matrix runs `02_tryxw` and `package_smoke` but does not require `01_smoke` or `03_visual_smoke`. The GUI cases remain available locally and through `.github/workflows/gui-smoke.yml`, which is intended as a non-blocking diagnostic workflow rather than a required PR gate.
 
 Run tests:
 ```bash
@@ -61,6 +64,7 @@ cmake --build build --target test
 ctest --test-dir build -L smoke --output-on-failure
 ctest --test-dir build -R '^01_smoke$' --output-on-failure
 ctest --test-dir build -R '^02_tryxw$' --output-on-failure
+ctest --test-dir build -R '^03_visual_smoke$' --output-on-failure
 ctest --test-dir build -L package --output-on-failure
 
 # Skip GUI smoke registration when you only need the default CI-equivalent set

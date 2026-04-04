@@ -50,6 +50,22 @@ if(XWTEST_SMOKE_SUPPORT AND UGS_ENABLE_GUI_SMOKE)
     PROPERTIES
       LABELS "smoke;x11"
       PASS_REGULAR_EXPRESSION "${_expected_regex}")
+
+  set(_visual_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/cases/03_visual_smoke/run_visual_smoke.cmake")
+  set(_visual_smoke_expected "${CMAKE_CURRENT_SOURCE_DIR}/cases/03_visual_smoke/expected.ppm")
+  set(_visual_smoke_actual "${CMAKE_BINARY_DIR}/test-artifacts/03_visual_smoke.ppm")
+  if(EXISTS "${_visual_smoke_script}" AND EXISTS "${_visual_smoke_expected}")
+    add_test(NAME 03_visual_smoke
+             COMMAND ${CMAKE_COMMAND}
+               -DXWTEST_SMOKE_BIN=$<TARGET_FILE:xwtest_smoke>
+               -DEXPECTED_PPM=${_visual_smoke_expected}
+               -DACTUAL_PPM=${_visual_smoke_actual}
+               -DXWTEST_SMOKE_DISPLAY=${XWTEST_SMOKE_DISPLAY}
+               -P ${_visual_smoke_script})
+    set_tests_properties(03_visual_smoke
+      PROPERTIES
+        LABELS "smoke;x11;visual")
+  endif()
 elseif(NOT XWTEST_SMOKE_SUPPORT)
   message(STATUS "xwtest_smoke target not available; skipping GUI smoke test registration.")
 else()
