@@ -22,6 +22,10 @@ function(_copy_and_patch input abs_out)
   file(READ "${input}" _content)
   string(REPLACE "UGSYSTEM:" "UGSYSTEM_" _content "${_content}")
   string(REGEX REPLACE "INTEGER\\*2[ ]+CHC" "CHARACTER*2     CHC" _content "${_content}")
+  string(REPLACE
+    "#if  ( defined(__LINUX_AOUT) || defined(__LINUX_ELF) || defined(__OSF1) ||\\\n       defined(__Darwin) )"
+    "#if defined(__LINUX_AOUT) || defined(__LINUX_ELF) || defined(__OSF1) || defined(__Darwin) || defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))"
+    _content "${_content}")
   get_filename_component(_name "${input}" NAME)
   if(_name STREQUAL "aux.c")
     if(NOT _content MATCHES "#include <string.h>")
