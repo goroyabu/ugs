@@ -97,6 +97,20 @@ else()
   message(STATUS "tryxw_smoke source missing; skipping case 02_tryxw.")
 endif()
 
+set(_duplex_glyph_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/04_duplex_glyph/duplex_glyph_smoke.f90")
+if(EXISTS "${_duplex_glyph_src}")
+  add_executable(duplex_glyph_smoke "${_duplex_glyph_src}")
+  target_link_libraries(duplex_glyph_smoke PRIVATE ugs)
+
+  add_test(NAME 04_duplex_glyph
+           COMMAND $<TARGET_FILE:duplex_glyph_smoke>)
+  set_tests_properties(04_duplex_glyph
+    PROPERTIES
+      LABELS "smoke;font")
+else()
+  message(STATUS "duplex_glyph_smoke source missing; skipping case 04_duplex_glyph.")
+endif()
+
 set(_package_smoke_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke")
 set(_package_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke/run_package_smoke.cmake")
 if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt" AND EXISTS "${_package_smoke_script}")
