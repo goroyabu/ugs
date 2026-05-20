@@ -111,6 +111,24 @@ else()
   message(STATUS "duplex_glyph_smoke source missing; skipping case 04_duplex_glyph.")
 endif()
 
+set(_postscript_filename_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/05_postscript_filename/postscript_filename_smoke.f90")
+if(EXISTS "${_postscript_filename_src}")
+  add_executable(postscript_filename_smoke "${_postscript_filename_src}")
+  target_link_libraries(postscript_filename_smoke PRIVATE ugs)
+
+  set(_postscript_filename_work_dir "${CMAKE_BINARY_DIR}/test-artifacts/05_postscript_filename")
+  file(MAKE_DIRECTORY "${_postscript_filename_work_dir}")
+
+  add_test(NAME 05_postscript_filename
+           COMMAND $<TARGET_FILE:postscript_filename_smoke>)
+  set_tests_properties(05_postscript_filename
+    PROPERTIES
+      LABELS "smoke;postscript"
+      WORKING_DIRECTORY "${_postscript_filename_work_dir}")
+else()
+  message(STATUS "postscript_filename_smoke source missing; skipping case 05_postscript_filename.")
+endif()
+
 set(_package_smoke_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke")
 set(_package_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke/run_package_smoke.cmake")
 if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt" AND EXISTS "${_package_smoke_script}")
