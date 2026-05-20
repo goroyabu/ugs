@@ -38,6 +38,11 @@ function(_copy_and_patch input abs_out)
     if(NOT _content MATCHES "#include <string.h>")
       string(REPLACE "#include <stdlib.h>\n" "#include <stdlib.h>\n#include <string.h>\n" _content "${_content}")
     endif()
+  elseif(_name STREQUAL "postscr.f")
+    string(REPLACE
+      "      CHARACTER*256 EXNM\n"
+      "      CHARACTER*256 EXNM\n      SAVE          EXNM\n"
+      _content "${_content}")
   endif()
   get_filename_component(_outdir "${abs_out}" DIRECTORY)
   file(MAKE_DIRECTORY "${_outdir}")
