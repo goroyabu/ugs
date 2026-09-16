@@ -11,7 +11,7 @@ fetch_and_unpack_configure_dirs()
 # ------------------------------------------------------------
 # Options
 # ------------------------------------------------------------
-option(NET_FETCH              "Allow downloading upstream archives when local tarballs are missing (Mode B fallback)" ON)
+option(NET_FETCH              "Allow downloading upstream archives when local archives are missing" ON)
 option(BUILD_TESTING "Enable building and running tests" ON)
 
 option(UGS_BUILD_XWTEST       "Build the legacy xwtest sample program" OFF)
