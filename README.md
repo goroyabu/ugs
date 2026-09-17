@@ -306,8 +306,15 @@ manifest, so it may no longer describe your earlier installation prefix.
 | Cannot open display | Use an accessible X server's actual `DISPLAY`, use Xvfb on Linux, or select `-LE x11` for display-independent tests |
 | Visual comparison fails | Inspect `build/test-artifacts/03_visual_smoke.ppm` and the golden image; account for the reference environment before changing expectations |
 
-Maintainer/contribution guidance is being organized in
-[#16](https://github.com/goroyabu/ugs/issues/16), detailed test contracts in
-[#21](https://github.com/goroyabu/ugs/issues/21), and repository/upstream license
-notices in [#23](https://github.com/goroyabu/ugs/issues/23). These links track
-unfinished guidance rather than asserting that the documents already exist.
+## Contributing and Security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development, verification, pull request,
+and release procedures. [AGENTS.md](AGENTS.md) points coding agents to the same
+canonical guidance. Report suspected vulnerabilities privately as described in
+[SECURITY.md](SECURITY.md), rather than opening a public Issue.
+
+The test descriptions above state the current verification boundaries; a more
+detailed contract map is planned. Repository-owned and upstream-derived license
+notices are still being investigated; this README does not assign a license to
+upstream code. Progress is tracked in [#21](https://github.com/goroyabu/ugs/issues/21)
+and [#23](https://github.com/goroyabu/ugs/issues/23).

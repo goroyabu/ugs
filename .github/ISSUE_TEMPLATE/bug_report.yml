@@ -1,0 +1,101 @@
+name: Bug report
+description: Report a reproducible problem in the build, package, or UGS library
+title: ""
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use an imperative `<area>: <summary>` title (for example, build: fix compiler detection). Do not include secrets or private data.
+        Report suspected security vulnerabilities privately through the Security page instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem
+      description: Describe what went wrong and what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest reliable sequence of commands or actions that reproduces the problem.
+      placeholder: |
+        1. Configure with ...
+        2. Build with ...
+        3. Run ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: fortran-input
+    attributes:
+      label: Minimal Fortran input
+      description: If UGS behavior is involved, provide the smallest program that demonstrates it.
+      render: fortran
+
+  - type: input
+    id: version
+    attributes:
+      label: UGS repository release or commit
+      placeholder: v0.1.0 or a commit identifier
+    validations:
+      required: true
+
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      placeholder: Ubuntu 24.04, macOS 15, or another environment
+    validations:
+      required: true
+
+  - type: input
+    id: compiler
+    attributes:
+      label: C and Fortran compilers and versions
+      placeholder: AppleClang 17 and GNU Fortran 15, or the compilers used
+    validations:
+      required: true
+
+  - type: input
+    id: cmake
+    attributes:
+      label: CMake version and generator
+      placeholder: CMake 3.30 with Ninja 1.12
+    validations:
+      required: true
+
+  - type: dropdown
+    id: net-fetch
+    attributes:
+      label: Source acquisition mode
+      description: Select the NET_FETCH setting used when the problem occurred.
+      options:
+        - NET_FETCH=ON
+        - NET_FETCH=OFF
+        - Not applicable or unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: display-and-output
+    attributes:
+      label: Output driver and display environment
+      description: For runtime problems, identify XWINDOW, PostScript, or another driver. For X11 problems, include the X server (XQuartz, Xvfb, etc.), relevant DISPLAY configuration, and whether SSH forwarding is involved. Remove private host information.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Paste the relevant configure, build, test, or runtime output after removing private data.
+      render: text
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other information that may help reproduce or understand the problem.

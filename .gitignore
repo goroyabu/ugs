@@ -170,4 +170,5 @@ CTestTestfile.cmake
 # If you keep tarballs locally, do not publish them either
 archives/
 
-AGENTS.md
+# Preserved local guidance before tracked AGENTS.md was introduced
+/AGENTS.pre-issue-16.2026-09-18.md

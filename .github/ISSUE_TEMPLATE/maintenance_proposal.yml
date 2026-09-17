@@ -1,0 +1,72 @@
+name: Maintenance proposal
+description: Propose a scoped build, portability, packaging, CI, test, or documentation improvement
+title: ""
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for maintenance proposals within the repository's scope.
+        Use a short imperative `<area>: <summary>` title.
+        New graphics features for upstream UGS are outside this repository's scope.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or maintenance need
+      description: Describe the limitation, recurring work, or user need that should be addressed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Relationship to project scope
+      description: Explain how this relates to build, portability, packaging, verification, or documentation maintenance.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed outcome
+      description: Describe the desired result without requiring a particular implementation when alternatives may exist.
+    validations:
+      required: true
+
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Non-goals
+      description: Identify related work intentionally excluded from this proposal.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Completion criteria
+      description: Describe observable outcomes or checks that establish when the work is complete.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: List workarounds or other approaches already considered, if any.
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: User and maintenance impact
+      description: Note expected compatibility, testing, documentation, packaging, or long-term maintenance effects.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched the open Issues for an existing proposal covering this topic.
+          required: true
+        - label: I removed secrets and unrelated private data from this proposal.
+          required: true
