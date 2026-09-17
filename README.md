@@ -28,7 +28,7 @@ maintenance repository's releases, not the upstream UGS source version.
 ### Prerequisites
 
 - CMake: the build declares a minimum of 3.15; that minimum is not currently
-  exercised in CI. Verification is tracked in [#22](https://github.com/goroyabu/ugs/issues/22).
+  exercised in CI.
 - A C compiler and GNU Fortran. Other Fortran compilers are not currently
   verified; the build includes platform-specific compiler flags.
 - A build tool supported by CMake, such as Make. Generator coverage is not
@@ -115,7 +115,7 @@ cmake --build build/package-example --parallel
 This consumer does not call UGS functions. It checks basic package discovery
 and target linkage, not a complete Fortran application's runtime dependencies
 or graphics output. A public executable UGS example and stronger installed-
-package acceptance are tracked in [#18](https://github.com/goroyabu/ugs/issues/18).
+package acceptance are not currently provided.
 
 ## Tests
 
@@ -134,8 +134,8 @@ CTest. CTest executes checks; it does not build their executables for you.
 The X11 harness checks are not comprehensive UGS rendering tests.
 `02_tryxw` prints UGS error state but does not explicitly assert those values.
 The PostScript regression checks the file and header, not full rendering
-correctness. Coverage and stronger contracts are tracked in
-[#21](https://github.com/goroyabu/ugs/issues/21).
+correctness. The repository does not currently publish a more detailed test-
+contract map or claim comprehensive API coverage.
 
 ### Without an X Server
 
@@ -165,9 +165,9 @@ xvfb-run --auto-servernum ctest --test-dir build --output-on-failure
 ```
 
 The visual golden image was created under Ubuntu/Xvfb. Exact comparison can
-fail in a different rendering environment; see
-[#7](https://github.com/goroyabu/ugs/issues/7). For local X11 checks without
-that comparison, add `-E '^03_visual_smoke$'` to the CTest command.
+fail in a different rendering environment. For local X11 checks without that
+comparison, add `-E '^03_visual_smoke$'` to the CTest command. No normalized or
+tolerance-based comparison is currently provided.
 
 Tests normally inherit `DISPLAY`. Use the display supplied by your X server
 rather than assuming `:0`. `XWTEST_SMOKE_DISPLAY` can override it during
@@ -202,14 +202,15 @@ Archives and downloaded sources are not tracked in Git.
 
 New downloads are checked against the pinned `UGS_SRC_SHA256` value. The current
 implementation does **not** recheck local archives or existing download-cache
-files. Strict verification across every acquisition path is tracked in
-[#19](https://github.com/goroyabu/ugs/issues/19).
+files, so strict verification across every acquisition path is not currently
+provided.
 
 To inspect an existing archive's hash on macOS or Linux, run
 `shasum -a 256 archives/ugs.tar.gz` and compare it with the pin in
 [`CMakeLists.txt`](CMakeLists.txt). Do not change the expected hash merely to
-accept an unexplained mismatch. A reviewed upstream refresh and a deliberate
-local experiment are different operations; their policy is also tracked in #19.
+accept an unexplained mismatch. Treat a reviewed upstream refresh and a
+deliberate local experiment as different operations. The repository does not
+currently provide a supported unverified-archive override.
 
 ## Configuration Options
 
@@ -240,12 +241,12 @@ Workflow definitions are the source of truth for current CI coverage:
 | [GUI Smoke](.github/workflows/gui-smoke.yml), `ubuntu-latest` | Separate manual/scheduled diagnostic checks for `01_smoke` and `03_visual_smoke` |
 
 GUI Smoke is not a required PR gate. Workflow configuration does not guarantee
-that scheduled execution is currently active; check
-[Actions](https://github.com/goroyabu/ugs/actions) for current status.
-Operational recovery/policy is tracked in
-[#5](https://github.com/goroyabu/ugs/issues/5). Coverage gaps, minimum CMake
-version, and environment selection are tracked in
-[#22](https://github.com/goroyabu/ugs/issues/22).
+that scheduled execution is currently active; GitHub may disable scheduled
+workflows after repository inactivity. Check
+[Actions](https://github.com/goroyabu/ugs/actions) for current status and use
+manual dispatch when needed. The current CI does not verify the declared
+minimum CMake version or a complete offline workflow, and macOS does not run
+the smoke-labeled font, PostScript, or X11 tests.
 
 ## Known Limitations
 
@@ -255,7 +256,7 @@ version, and environment selection are tracked in
 - XWINDOW, selected font behavior, and PostScript filename handling have
   targeted checks, not comprehensive API or rendering coverage.
 - Installed-package testing does not yet exercise a real UGS call.
-- Legacy compiler warnings remain; see [#8](https://github.com/goroyabu/ugs/issues/8).
+- Legacy C and Fortran compiler warnings remain and are not treated as errors.
 
 ## Directory Layout and Cleanup
 
@@ -273,8 +274,8 @@ and other build directories have their own `vendor` and `generated` trees.
 
 Maintain compatibility changes in
 [`cmake/PrepareUgsSources.cmake`](cmake/PrepareUgsSources.cmake), not by editing
-generated copies. Regeneration and incremental-build verification are tracked
-in [#20](https://github.com/goroyabu/ugs/issues/20).
+generated copies. Changes to source-preparation logic and incremental rebuilds
+are not currently covered by a dedicated regeneration test.
 
 ```bash
 cmake --build build --target clean_downloads
@@ -282,9 +283,9 @@ cmake --build build --target clean_downloads
 
 Despite its name, `clean_downloads` removes the current build's `vendor` and
 `generated` trees **as well as** the configured download cache. It preserves
-user-provided archives. Other build directories may share that cache.
-Cleanup/rebuild recovery is under review in #20; a fresh build directory is
-the clearest way to start a new configuration.
+user-provided archives. Other build directories may share that cache. Cleanup
+and recovery are not currently covered by a dedicated test; a fresh build
+directory is the clearest way to start a new configuration.
 
 ```bash
 cmake --build build --target uninstall
@@ -314,7 +315,6 @@ canonical guidance. Report suspected vulnerabilities privately as described in
 [SECURITY.md](SECURITY.md), rather than opening a public Issue.
 
 The test descriptions above state the current verification boundaries; a more
-detailed contract map is planned. Repository-owned and upstream-derived license
-notices are still being investigated; this README does not assign a license to
-upstream code. Progress is tracked in [#21](https://github.com/goroyabu/ugs/issues/21)
-and [#23](https://github.com/goroyabu/ugs/issues/23).
+detailed contract map is not yet provided. Repository-owned and upstream-
+derived license notices are still being investigated, and this README does not
+assign a license to upstream code.
