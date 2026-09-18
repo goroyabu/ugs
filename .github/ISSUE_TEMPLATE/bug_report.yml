@@ -1,6 +1,5 @@
 name: Bug report
 description: Report a reproducible problem in the build, package, or UGS library
-title: ""
 labels:
   - bug
 body:
