@@ -1,6 +1,5 @@
 name: Maintenance proposal
 description: Propose a scoped build, portability, packaging, CI, test, or documentation improvement
-title: ""
 labels:
   - enhancement
 body:
