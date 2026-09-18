@@ -169,5 +169,3 @@ CTestTestfile.cmake
 .DS_Store
 # If you keep tarballs locally, do not publish them either
 archives/
-
-AGENTS.md
