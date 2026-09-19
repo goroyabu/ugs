@@ -129,9 +129,11 @@ else()
   message(STATUS "postscript_filename_smoke source missing; skipping case 05_postscript_filename.")
 endif()
 
-set(_package_smoke_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke")
+set(_package_smoke_src_dir "${PROJECT_SOURCE_DIR}/examples/cmake")
 set(_package_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke/run_package_smoke.cmake")
-if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt" AND EXISTS "${_package_smoke_script}")
+if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt"
+   AND EXISTS "${_package_smoke_src_dir}/ugs_postscript_example.f90"
+   AND EXISTS "${_package_smoke_script}")
   add_test(NAME package_smoke
            COMMAND ${CMAKE_COMMAND}
              -DMAIN_BUILD_DIR=${CMAKE_BINARY_DIR}

@@ -131,15 +131,16 @@ relocation behavior, install to a clean staging prefix and verify a consumer:
 
 ```bash
 cmake --install build --prefix "$PWD/build/stage"
-cmake -S tests/package_smoke -B build/package-consumer \
+cmake -S examples/cmake -B build/package-consumer \
   -DCMAKE_PREFIX_PATH="$PWD/build/stage"
 cmake --build build/package-consumer --parallel
+ctest --test-dir build/package-consumer --output-on-failure
 ```
 
-The current consumer is a trivial C program that does not call UGS. It verifies
-package discovery and basic linkage, not real UGS execution or all Fortran
-runtime requirements. For changes affecting those behaviors, also validate a
-minimal relevant UGS caller and report what was checked.
+The example discovers `ugs::ugs`, calls UGS through the installed package, and
+validates generated PostScript output without requiring an X server. It is a
+focused compatibility check, so report any additional platform, dependency, or
+graphics verification relevant to the change.
 
 Each installation replaces the build tree's install manifest, including the
 install performed by `package_smoke`. Do not assume that a later `uninstall`
