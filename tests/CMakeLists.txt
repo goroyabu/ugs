@@ -145,3 +145,54 @@ if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt"
     PROPERTIES
       LABELS "package")
 endif()
+
+function(add_archive_hash_test case_name)
+  add_test(
+    NAME "archive_hash.${case_name}"
+    COMMAND "${CMAKE_COMMAND}"
+      "-DTEST_CASE=${case_name}"
+      "-DFETCH_MODULE=${PROJECT_SOURCE_DIR}/cmake/FetchAndUnpack.cmake"
+      "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/archive-hash-tests/${case_name}"
+      "-DRESOLVE_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/archive_hash/ResolveArchive.cmake"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/archive_hash/RunArchiveHashTest.cmake")
+  set_tests_properties("archive_hash.${case_name}" PROPERTIES
+    LABELS "archive-integrity"
+    TIMEOUT 30)
+endfunction()
+
+add_archive_hash_test(local_valid)
+add_archive_hash_test(local_mismatch_strict)
+add_archive_hash_test(cache_valid)
+add_archive_hash_test(cache_mismatch_strict)
+add_archive_hash_test(download_valid)
+add_archive_hash_test(download_mismatch_strict)
+add_archive_hash_test(no_fallback_after_mismatch)
+add_archive_hash_test(local_mismatch_allowed)
+add_archive_hash_test(cache_mismatch_allowed)
+add_archive_hash_test(download_mismatch_allowed)
+add_archive_hash_test(valid_archive_allowed_mode_warning)
+add_archive_hash_test(no_fallback_after_mismatch_allowed)
+add_archive_hash_test(missing_input_allowed)
+add_archive_hash_test(download_failure_allowed)
+
+get_filename_component(_selected_archive_dir "${UGS_SRC_TGZ}" DIRECTORY)
+add_test(
+  NAME archive_hash.legacy_cache_migration
+  COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+    "-DARCHIVE_DIR=${_selected_archive_dir}"
+    "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/archive-hash-tests/legacy-cache-migration"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/archive_hash/RunLegacyCacheMigrationTest.cmake")
+set_tests_properties(archive_hash.legacy_cache_migration PROPERTIES
+  LABELS "archive-integrity"
+  TIMEOUT 30)
+
+add_test(
+  NAME archive_hash.unpack_failure_allowed
+  COMMAND "${CMAKE_COMMAND}"
+    "-DFETCH_MODULE=${PROJECT_SOURCE_DIR}/cmake/FetchAndUnpack.cmake"
+    "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/archive-hash-tests/unpack-failure-allowed"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/archive_hash/RunUnpackFailureTest.cmake")
+set_tests_properties(archive_hash.unpack_failure_allowed PROPERTIES
+  LABELS "archive-integrity"
+  TIMEOUT 30)

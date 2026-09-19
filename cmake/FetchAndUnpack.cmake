@@ -3,6 +3,13 @@
 # fetch_and_unpack_configure_dirs()
 #   Ensures ARCHIVE_DIR and DOWNLOAD_CACHE_DIR are set (respecting user overrides) and exist on disk.
 function(fetch_and_unpack_configure_dirs)
+  if(UGS_ALLOW_UNVERIFIED_ARCHIVES)
+    message(WARNING
+      "UGS_ALLOW_UNVERIFIED_ARCHIVES=ON permits SHA256-mismatched upstream "
+      "archives. This mode is outside standard support and is not suitable "
+      "for CI or release builds.")
+  endif()
+
   if(NOT DEFINED ARCHIVE_DIR OR ARCHIVE_DIR STREQUAL "")
     set(ARCHIVE_DIR "${CMAKE_SOURCE_DIR}/archives" CACHE PATH "Directory for user-provided source archives" FORCE)
   endif()
@@ -12,6 +19,31 @@ function(fetch_and_unpack_configure_dirs)
     set(DOWNLOAD_CACHE_DIR "${CMAKE_SOURCE_DIR}/.cache/downloads" CACHE PATH "Directory for downloaded archives" FORCE)
   endif()
   file(MAKE_DIRECTORY "${DOWNLOAD_CACHE_DIR}")
+endfunction()
+
+# verify_input_file(FILE_PATH EXPECTED_SHA)
+#   Verifies an upstream input before it is returned for use by the build.
+function(verify_input_file FILE_PATH EXPECTED_SHA)
+  file(SHA256 "${FILE_PATH}" _actual_sha)
+  string(TOLOWER "${EXPECTED_SHA}" _expected_sha)
+  if(NOT _actual_sha STREQUAL _expected_sha)
+    string(CONCAT _mismatch_message
+      "SHA256 mismatch for upstream archive.\n"
+      "  Path: ${FILE_PATH}\n"
+      "  Expected SHA256: ${_expected_sha}\n"
+      "  Actual SHA256: ${_actual_sha}\n"
+      "Replace the file with an archive matching the pinned SHA256 value, "
+      "or review and update the pin as part of an upstream refresh.")
+    if(UGS_ALLOW_UNVERIFIED_ARCHIVES)
+      message(WARNING
+        "${_mismatch_message}\n"
+        "Proceeding because UGS_ALLOW_UNVERIFIED_ARCHIVES=ON. "
+        "This mode is outside standard support and is not suitable for CI "
+        "or release builds.")
+    else()
+      message(FATAL_ERROR "${_mismatch_message}")
+    endif()
+  endif()
 endfunction()
 
 # resolve_input_file(OUT_VAR URL SHA LOCAL_HINT)
@@ -29,28 +61,36 @@ endfunction()
 function(resolve_input_file OUT_VAR URL SHA LOCAL_HINT)
   get_filename_component(_name "${URL}" NAME)
   set_property(GLOBAL APPEND PROPERTY FETCH_AND_UNPACK_CACHE_DIRS "${DOWNLOAD_CACHE_DIR}")
-  if(EXISTS "${LOCAL_HINT}")
-    set(${OUT_VAR} "${LOCAL_HINT}" PARENT_SCOPE)
-    return()
-  endif()
   set(_archive_path "${ARCHIVE_DIR}/${_name}")
-  if(EXISTS "${_archive_path}")
-    set(${OUT_VAR} "${_archive_path}" PARENT_SCOPE)
-    return()
-  endif()
-  if(NET_FETCH)
+  if(EXISTS "${LOCAL_HINT}")
+    set(_selected_path "${LOCAL_HINT}")
+  elseif(EXISTS "${_archive_path}")
+    set(_selected_path "${_archive_path}")
+  elseif(NET_FETCH)
     file(MAKE_DIRECTORY "${DOWNLOAD_CACHE_DIR}")
     set(_dest "${DOWNLOAD_CACHE_DIR}/${_name}")
     if(NOT EXISTS "${_dest}")
       message(STATUS "Downloading ${URL} -> ${_dest}")
-      file(DOWNLOAD "${URL}" "${_dest}" SHOW_PROGRESS EXPECTED_HASH "SHA256=${SHA}")
+      file(DOWNLOAD "${URL}" "${_dest}" SHOW_PROGRESS STATUS _download_status)
+      list(GET _download_status 0 _download_code)
+      list(GET _download_status 1 _download_message)
+      if(NOT _download_code EQUAL 0)
+        file(REMOVE "${_dest}")
+        message(FATAL_ERROR
+          "Failed to download upstream archive.\n"
+          "  URL: ${URL}\n"
+          "  Path: ${_dest}\n"
+          "  Reason: ${_download_message}")
+      endif()
     else()
       message(STATUS "Using cached download: ${_dest}")
     endif()
-    set(${OUT_VAR} "${_dest}" PARENT_SCOPE)
+    set(_selected_path "${_dest}")
   else()
     message(FATAL_ERROR "Required file not found and NET_FETCH=OFF. Please place it at: ${LOCAL_HINT}")
   endif()
+  verify_input_file("${_selected_path}" "${SHA}")
+  set(${OUT_VAR} "${_selected_path}" PARENT_SCOPE)
 endfunction()
 
 # add_download_cleanup_target(TARGET_NAME)
