@@ -132,12 +132,16 @@ CTest. CTest executes checks; it does not build their executables for you.
 | `04_duplex_glyph` | DUPLEX glyph lookup produces nonempty, distinguishable strokes for two characters | No |
 | `05_postscript_filename` | Drawing creates the requested nonempty PostScript file with a recognizable header | No |
 | `package_smoke` | Clean staged installation, installed-target discovery, example build and execution, and PostScript output validation | No |
+| `archive_hash.*` | Local, cached, and downloaded archive selection, strict SHA256 enforcement, unsupported opt-out warnings, and failure diagnostics | No |
 
 The X11 harness checks are not comprehensive UGS rendering tests.
 `02_tryxw` prints UGS error state but does not explicitly assert those values.
 The PostScript regression checks the file and header, not full rendering
 correctness. The repository does not currently publish a more detailed test-
 contract map or claim comprehensive API coverage.
+
+Select only the archive acquisition checks with
+`ctest --test-dir build -L archive-integrity --output-on-failure`.
 
 ### Without an X Server
 
@@ -200,19 +204,39 @@ then a new download. With `NET_FETCH=OFF`, only the local archive location is
 used: an existing `.cache/downloads/ugs.tar.gz` alone is not sufficient.
 Archives and downloaded sources are not tracked in Git.
 
-### Current Integrity Verification
+### Archive Integrity Verification
 
-New downloads are checked against the pinned `UGS_SRC_SHA256` value. The current
-implementation does **not** recheck local archives or existing download-cache
-files, so strict verification across every acquisition path is not currently
-provided.
+Every selected upstream archive is checked against the repository's pinned
+SHA256 value, whether it comes from `ARCHIVE_DIR`, the download cache, or a new
+download. A mismatch stops configuration by default. A mismatched archive is
+not skipped in favor of another acquisition path.
 
 To inspect an existing archive's hash on macOS or Linux, run
 `shasum -a 256 archives/ugs.tar.gz` and compare it with the pin in
 [`CMakeLists.txt`](CMakeLists.txt). Do not change the expected hash merely to
 accept an unexplained mismatch. Treat a reviewed upstream refresh and a
-deliberate local experiment as different operations. The repository does not
-currently provide a supported unverified-archive override.
+deliberate local experiment as different operations.
+
+The pin is repository-owned rather than a configurable setting. Existing
+`UGS_SRC_SHA256` cache entries from earlier versions are ignored and removed
+during configuration; use the explicit experiment option below when needed.
+
+When only a known personal archive is available for a local experiment, the
+mismatch can be acknowledged explicitly:
+
+```bash
+cmake -S . -B build-local \
+  -DNET_FETCH=OFF \
+  -DUGS_ALLOW_UNVERIFIED_ARCHIVES=ON
+```
+
+This mode still calculates and reports the expected and actual hashes. It is
+outside standard support and must not be used for pull-request verification,
+CI, or releases. It does not ignore missing files, download failures, or
+unpacking failures. The setting persists in that build directory's CMake
+cache; disable it explicitly or use a fresh build directory before returning
+to a supported workflow. Include the archive path and reported actual hash
+when asking for help with an experimental build.
 
 ## Configuration Options
 
@@ -221,7 +245,7 @@ currently provide a supported unverified-archive override.
 | `NET_FETCH` | `ON` | Allows download-cache use and network fallback when a local archive is missing |
 | `ARCHIVE_DIR` | `<source>/archives` | Directory for user-provided `ugs.tar.gz` |
 | `DOWNLOAD_CACHE_DIR` | `<source>/.cache/downloads` | Download cache used with `NET_FETCH=ON` |
-| `UGS_SRC_SHA256` | Pin in `CMakeLists.txt` | Expected hash for new downloads; currently user-configurable in the CMake cache |
+| `UGS_ALLOW_UNVERIFIED_ARCHIVES` | `OFF` | Allows SHA256-mismatched archives only for unsupported local experiments; missing or unreadable inputs still fail |
 | `BUILD_TESTING` | `ON` | Builds test executables and registers tests; `OFF` disables both |
 | `UGS_ENABLE_GUI_SMOKE` | `ON` | Registers `01_smoke` and `03_visual_smoke`; does not control `02_tryxw` |
 | `UGS_BUILD_XWTEST` | `OFF` | Builds and installs the optional interactive legacy `xwtest` sample |
@@ -304,7 +328,7 @@ manifest, so it may no longer describe your earlier installation prefix.
 | Symptom | Check or action |
 | --- | --- |
 | Required archive missing with `NET_FETCH=OFF` | Place `ugs.tar.gz` in `ARCHIVE_DIR`; the download cache alone is not searched in this mode |
-| Download/hash failure | Check the source URL, connectivity, and expected pin; replace an invalid archive after investigating the mismatch |
+| Download/hash failure | Check the reported URL, archive path, expected hash, and actual hash; replace an invalid archive after investigating the mismatch |
 | C or Fortran compiler not found | Install the compilers and select `CC`/`FC` before configuring a fresh build tree |
 | X11 dependency not found | Install X11, Xaw, Xmu, and Xt development libraries; on Homebrew add its prefix to `CMAKE_PREFIX_PATH` |
 | Cannot open display | Use an accessible X server's actual `DISPLAY`, use Xvfb on Linux, or select `-LE x11` for display-independent tests |

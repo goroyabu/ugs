@@ -6,17 +6,20 @@ include(CMakePackageConfigHelpers)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FetchAndUnpack)
-fetch_and_unpack_configure_dirs()
 
 # ------------------------------------------------------------
 # Options
 # ------------------------------------------------------------
 option(NET_FETCH              "Allow downloading upstream archives when local archives are missing" ON)
 option(BUILD_TESTING "Enable building and running tests" ON)
+option(UGS_ALLOW_UNVERIFIED_ARCHIVES
+  "Allow SHA256-mismatched upstream archives for unsupported local experiments" OFF)
 
 option(UGS_BUILD_XWTEST       "Build the legacy xwtest sample program" OFF)
 option(UGS_F77_COMPAT "Enable legacy F77 calling convention compatibility (e.g., allow argument mismatch for %VAL-style calls)" ON)
 option(UGS_ENABLE_GUI_SMOKE "Register the GUI/X11 smoke test case 01_smoke" ON)
+
+fetch_and_unpack_configure_dirs()
 
 set(PACKAGE_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(XWTEST_SMOKE_DISPLAY "" CACHE STRING "Override DISPLAY when running the xwtest_smoke ctest (empty = inherit from environment)")
@@ -30,11 +33,18 @@ set(GEN_DIR     "${CMAKE_BINARY_DIR}/generated")
 
 set(UGS_SRC_ROOT "${VENDOR_ROOT}/ugs")
 set(UGS_SRC_URL  "http://ftp.riken.jp/iris/ugs/ugs.tar.gz")
-set(UGS_SRC_SHA256 "27bc46e975917bdf149e9ff6997885ffa24b0b1416bdf82ffaea5246b36e1f83"
-    CACHE STRING "Pinned SHA256 for the upstream ugs.tar.gz archive")
+get_property(_legacy_ugs_hash_override CACHE UGS_SRC_SHA256 PROPERTY TYPE SET)
+if(_legacy_ugs_hash_override)
+  message(WARNING
+    "The UGS_SRC_SHA256 cache override is no longer supported and will be "
+    "removed. Use UGS_ALLOW_UNVERIFIED_ARCHIVES=ON only for an unsupported "
+    "local experiment with a known archive.")
+endif()
+unset(UGS_SRC_SHA256 CACHE)
+set(_UGS_SRC_SHA256 "27bc46e975917bdf149e9ff6997885ffa24b0b1416bdf82ffaea5246b36e1f83")
 set(UGS_SRC_LOCAL   "${ARCHIVE_DIR}/ugs.tar.gz")
 
-resolve_input_file(UGS_SRC_TGZ "${UGS_SRC_URL}" "${UGS_SRC_SHA256}" "${UGS_SRC_LOCAL}")
+resolve_input_file(UGS_SRC_TGZ "${UGS_SRC_URL}" "${_UGS_SRC_SHA256}" "${UGS_SRC_LOCAL}")
 add_unpack_archive("${UGS_SRC_ROOT}.stamp" "${VENDOR_ROOT}" "${UGS_SRC_TGZ}"
   COMMENT "Unpacking UGS sources"
   COMMAND ${CMAKE_COMMAND} -E tar xzf)

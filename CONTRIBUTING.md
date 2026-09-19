@@ -116,10 +116,16 @@ reproducible fix. Explain why a patch is needed and verify the affected behavior
 
 Review source changes, versions, notices, and build/test behavior together when
 refreshing upstream inputs. Do not change the pinned hash simply to accept an
-unexplained mismatch. Currently only new downloads are hash-checked; local and
-cached archives are not rechecked. Review their hashes explicitly when relying
-on them as verification inputs. No unverified-archive override is provided.
-`NET_FETCH=OFF` requires a local archive; the download cache alone is insufficient.
+unexplained mismatch. Every selected local, cached, or downloaded archive is
+checked against the repository pin. `NET_FETCH=OFF` requires a local archive;
+the download cache alone is insufficient.
+
+`UGS_ALLOW_UNVERIFIED_ARCHIVES=ON` is limited to deliberate local experiments
+with a known personal archive. This mode is outside standard support. Do not
+use it as verification for a pull request, CI run, or release, and do not use
+results from that mode as evidence for a pinned upstream refresh. Return the
+build directory to strict verification after the experiment. Missing inputs,
+download failures, and unpacking failures remain errors in this mode.
 
 ## Public Package Compatibility
 
