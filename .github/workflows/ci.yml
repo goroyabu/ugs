@@ -67,8 +67,10 @@ jobs:
       - name: Install
         run: cmake --install build --prefix "${{ github.workspace }}/stage"
 
-      - name: Verify installed package with find_package
+      - name: Verify installed package example
         run: |
-          cmake -S tests/package_smoke -B build/package_smoke \
-            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/stage"
-          cmake --build build/package_smoke --parallel
+          cmake -S examples/cmake -B build/package-example \
+            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/stage" \
+            -DUGS_EXPECTED_PREFIX="${{ github.workspace }}/stage"
+          cmake --build build/package-example --parallel
+          ctest --test-dir build/package-example --output-on-failure

@@ -103,19 +103,21 @@ For a non-system installation, pass `-DCMAKE_PREFIX_PATH="$HOME/.local"`
 when configuring the consumer. Do not treat `build/vendor` or `build/generated`
 as installed include paths.
 
-The existing [`tests/package_smoke`](tests/package_smoke/CMakeLists.txt)
-project demonstrates package discovery and building a trivial C consumer:
+The [`examples/cmake`](examples/cmake) project demonstrates package discovery,
+linking through `ugs::ugs`, and running a small Fortran program against the
+installed package:
 
 ```bash
-cmake -S tests/package_smoke -B build/package-example \
+cmake -S examples/cmake -B build/package-example \
   -DCMAKE_PREFIX_PATH="$HOME/.local"
 cmake --build build/package-example --parallel
+ctest --test-dir build/package-example --output-on-failure
 ```
 
-This consumer does not call UGS functions. It checks basic package discovery
-and target linkage, not a complete Fortran application's runtime dependencies
-or graphics output. A public executable UGS example and stronger installed-
-package acceptance are not currently provided.
+The example calls UGS through the installed target, creates `ugs-example.ps`,
+and checks that the result is a nonempty PostScript file. It does not require an
+X server. This is a focused installed-package example rather than comprehensive
+graphics, API, or platform coverage.
 
 ## Tests
 
@@ -129,7 +131,7 @@ CTest. CTest executes checks; it does not build their executables for you.
 | `03_visual_smoke` | The X11 harness captures a frame and compares it exactly with a golden PPM image | Yes |
 | `04_duplex_glyph` | DUPLEX glyph lookup produces nonempty, distinguishable strokes for two characters | No |
 | `05_postscript_filename` | Drawing creates the requested nonempty PostScript file with a recognizable header | No |
-| `package_smoke` | Installation into a build-tree prefix, package discovery, and a trivial consumer build | No |
+| `package_smoke` | Clean staged installation, installed-target discovery, example build and execution, and PostScript output validation | No |
 
 The X11 harness checks are not comprehensive UGS rendering tests.
 `02_tryxw` prints UGS error state but does not explicitly assert those values.
@@ -255,7 +257,8 @@ the smoke-labeled font, PostScript, or X11 tests.
 - Only a static library is provided; this build always requires X11 libraries.
 - XWINDOW, selected font behavior, and PostScript filename handling have
   targeted checks, not comprehensive API or rendering coverage.
-- Installed-package testing does not yet exercise a real UGS call.
+- Installed-package testing exercises one PostScript path, not the full UGS API
+  or X11-backed graphics behavior.
 - Legacy C and Fortran compiler warnings remain and are not treated as errors.
 
 ## Directory Layout and Cleanup
