@@ -164,6 +164,13 @@ Keep long-lived documents self-contained. Issues and PRs record decisions and
 history but must not replace an explanation of the current contract. Link to
 upstream manuals when appropriate rather than copying them.
 
+Do not commit agent- or tool-generated planning artifacts, such as
+`docs/superpowers` specifications and implementation plans. Record working
+decisions, plans, and progress in the relevant Issue or PR, and incorporate
+durable outcomes into the canonical documentation when they change the
+repository's current contract. Keep temporary local planning notes untracked
+and remove them when they are no longer needed.
+
 The tracked root `AGENTS.md` contains stable scope, boundaries, verification
 principles, and pointers to canonical documents. Detailed development/release
 procedures belong here, user workflows and current test descriptions in the
