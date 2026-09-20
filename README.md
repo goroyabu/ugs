@@ -126,9 +126,9 @@ CTest. CTest executes checks; it does not build their executables for you.
 
 | Test | What it checks | X server needed |
 | --- | --- | --- |
-| `01_smoke` | The X11 harness opens a viewable window and reports the expected message | Yes |
+| `01_smoke` | The repository-owned Xlib harness opens a viewable window and reports the expected message | Yes |
 | `02_tryxw` | A Fortran program exercises the UGS XWINDOW drawing path | Yes |
-| `03_visual_smoke` | The X11 harness captures a frame and compares it exactly with a golden PPM image | Yes |
+| `03_visual_smoke` | The repository-owned Xlib harness captures a frame and compares it exactly with a golden PPM image | Yes |
 | `04_duplex_glyph` | DUPLEX glyph lookup produces nonempty, distinguishable strokes for two characters | No |
 | `05_postscript_filename` | Drawing creates the requested nonempty PostScript file with a recognizable header | No |
 | `package_smoke` | Clean staged installation, installed-target discovery, example build and execution, and PostScript output validation | No |
@@ -137,7 +137,9 @@ CTest. CTest executes checks; it does not build their executables for you.
 See [`tests/README.md`](tests/README.md) for the contracts, expectation sources,
 and deliberately deferred coverage behind these checks.
 
-The X11 harness checks are not comprehensive UGS rendering tests.
+The repository-owned Xlib harness uses fixed black-and-white primitives and
+does not compile upstream UGS sources. Its checks are not comprehensive UGS
+rendering tests.
 `02_tryxw` treats every reported UGS error level as a failure, but it does not
 compare rendered pixels.
 The PostScript regression checks the file and header, not full rendering
