@@ -23,12 +23,13 @@
 10    CONTINUE
 
       CALL UGINIT ( 'CLEAR' , SEG , LSEG )
+      CALL CHECK_UGS_ERROR ( 'UGINIT' )
 
 *     Open XWINDOW device (simplified, environment DISPLAY is used)
       CALL UGOPEN ( 'XWINDOW' , 1 )
-      WRITE (*,*) 'UGOPEN done, UGELV/UGENM/UGEIX =',
-     +            UGELV, UGENM, UGEIX
+      CALL CHECK_UGS_ERROR ( 'UGOPEN' )
       CALL UGSLCT ( ' ' , 1 )
+      CALL CHECK_UGS_ERROR ( 'UGSLCT' )
 
 *     Font/text path (UGFONT/UGCTOL) is disabled in this smoke test
 *     because font BLOCK DATA may not be linked on all toolchains.
@@ -50,9 +51,13 @@
 
 *     Basic colored cross-lines
       CALL UGLINE ( ' '    , 0.1 , 0.1 , 0 , SEG )
+      CALL CHECK_UGS_ERROR ( 'UGLINE' )
       CALL UGLINE ( 'RED'  , 0.9 , 0.9 , 1 , SEG )
+      CALL CHECK_UGS_ERROR ( 'UGLINE' )
       CALL UGLINE ( ' '    , 0.1 , 0.9 , 0 , SEG )
+      CALL CHECK_UGS_ERROR ( 'UGLINE' )
       CALL UGLINE ( 'GREEN', 0.9 , 0.1 , 1 , SEG )
+      CALL CHECK_UGS_ERROR ( 'UGLINE' )
 
 *     Draw text-generated path (disabled as above)
 *     CALL UGPLIN ( ' ' , XTEXT,YTEXT,NCOORD , BTEXT,-NCOORD, SEG )
@@ -71,8 +76,7 @@
 
 *     Flush segment to the device
       CALL UGWRIT ( ' ' , 0 , SEG )
-      WRITE (*,*) 'UGWRIT done, UGELV/UGENM/UGEIX =',
-     +            UGELV, UGENM, UGEIX
+      CALL CHECK_UGS_ERROR ( 'UGWRIT' )
 
 *     Optional hold for manual inspection (does not affect automated tests).
       IF (HOLD_WINDOW) THEN
@@ -81,10 +85,26 @@
       ENDIF
 
       CALL UGINIT ( 'CLEAR' , SEG , LSEG )
+      CALL CHECK_UGS_ERROR ( 'UGINIT' )
 
 66666 CONTINUE
 
       CALL UGCLOS ( ' ' )
+      CALL CHECK_UGS_ERROR ( 'UGCLOS' )
 
       STOP
+      END
+
+      SUBROUTINE CHECK_UGS_ERROR ( STEP )
+      CHARACTER*(*) STEP
+
+      INCLUDE 'UGSYSTEM_UGERRCBK.FOR'
+
+      IF (UGELV .NE. 0) THEN
+         WRITE (*,*) 'UGS call failed after ', STEP,
+     +               ': UGELV/UGENM/UGEIX =', UGELV, UGENM, UGEIX
+         STOP 1
+      ENDIF
+
+      RETURN
       END

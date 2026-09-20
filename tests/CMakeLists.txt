@@ -92,7 +92,8 @@ if(EXISTS "${_tryxw_src}")
            COMMAND ${_tryxw_cmd})
   set_tests_properties(02_tryxw
     PROPERTIES
-      LABELS "smoke;x11;fortran")
+      LABELS "smoke;x11;fortran"
+      FAIL_REGULAR_EXPRESSION "ERROR FOUND BY THE UNIFIED GRAPHICS SYSTEM")
 else()
   message(STATUS "tryxw_smoke source missing; skipping case 02_tryxw.")
 endif()

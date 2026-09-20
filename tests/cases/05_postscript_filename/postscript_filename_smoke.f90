@@ -9,6 +9,20 @@ program postscript_filename_smoke
   integer(kind=8) :: file_size
   logical :: exists
 
+  inquire(file=output_file, exist=exists)
+  if (exists) then
+    open(newunit=unit, file=output_file, status='old', iostat=ios)
+    if (ios /= 0) then
+      print *, 'Could not open previous PostScript output: ', output_file
+      stop 1
+    end if
+    close(unit, status='delete', iostat=ios)
+    if (ios /= 0) then
+      print *, 'Could not remove previous PostScript output: ', output_file
+      stop 1
+    end if
+  end if
+
   call uginit('CLEAR', seg, lseg)
   call ugopen('POSTSCR,DDNAME=' // output_file, 1)
   call ugslct(' ', 1)
