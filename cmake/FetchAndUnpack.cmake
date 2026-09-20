@@ -109,8 +109,9 @@ function(add_download_cleanup_target TARGET_NAME)
     COMMENT "Remove build products and download cache(s): ${_dirs}")
 endfunction()
 
-# add_unpack_archive(STAMP_FILE DEST_DIR ARCHIVE_PATH COMMAND … [COMMENT …])
-#   Arguments: STAMP_FILE, DEST_DIR, ARCHIVE_PATH, COMMENT, COMMAND
+# add_unpack_archive(STAMP_FILE DEST_DIR ARCHIVE_PATH COMMAND …
+#                    [COMMENT …] [RESET_PATH …])
+#   Arguments: STAMP_FILE, DEST_DIR, ARCHIVE_PATH, COMMENT, RESET_PATH, COMMAND
 #   Example:
 #     add_unpack_archive("${DemoApp_SRC_ROOT}.stamp" "${DemoApp_SRC_ROOT}" "${DemoApp_SRC_TGZ}"
 #       COMMENT "Unpacking DemoApp sources"
@@ -121,7 +122,7 @@ endfunction()
 #     #   DemoApp_SRC_TGZ  = "/opt/demoapp/demoapp-src.tgz"
 function(add_unpack_archive STAMP_FILE DEST_DIR ARCHIVE_PATH)
   set(options)
-  set(oneValueArgs COMMENT)
+  set(oneValueArgs COMMENT RESET_PATH)
   set(multiValueArgs COMMAND)
   cmake_parse_arguments(UNPACK "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   if(NOT UNPACK_COMMAND)
@@ -130,7 +131,13 @@ function(add_unpack_archive STAMP_FILE DEST_DIR ARCHIVE_PATH)
   if(NOT UNPACK_COMMENT)
     set(UNPACK_COMMENT "Unpacking ${ARCHIVE_PATH}")
   endif()
+  set(_reset_command)
+  if(UNPACK_RESET_PATH)
+    list(APPEND _reset_command
+      COMMAND ${CMAKE_COMMAND} -E rm -rf "${UNPACK_RESET_PATH}")
+  endif()
   add_custom_command(OUTPUT "${STAMP_FILE}"
+    ${_reset_command}
     COMMAND ${CMAKE_COMMAND} -E make_directory "${DEST_DIR}"
     COMMAND ${CMAKE_COMMAND} -E chdir "${DEST_DIR}" ${UNPACK_COMMAND} "${ARCHIVE_PATH}"
     COMMAND ${CMAKE_COMMAND} -E touch "${STAMP_FILE}"
@@ -141,7 +148,7 @@ function(add_unpack_archive STAMP_FILE DEST_DIR ARCHIVE_PATH)
 endfunction()
 
 # add_unpack_target(TARGET_NAME)
-#   Aggregates all registered unpack stamp files into a single ALL target.
+#   Aggregates all registered unpack stamp files into an explicit target.
 function(add_unpack_target TARGET_NAME)
   get_property(_stamps GLOBAL PROPERTY FETCH_AND_UNPACK_STAMPS)
   if(NOT _stamps)
@@ -149,6 +156,6 @@ function(add_unpack_target TARGET_NAME)
     return()
   endif()
   list(REMOVE_DUPLICATES _stamps)
-  add_custom_target(${TARGET_NAME} ALL
+  add_custom_target(${TARGET_NAME}
     DEPENDS ${_stamps})
 endfunction()

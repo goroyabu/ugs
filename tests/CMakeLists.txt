@@ -196,3 +196,16 @@ add_test(
 set_tests_properties(archive_hash.unpack_failure_allowed PROPERTIES
   LABELS "archive-integrity"
   TIMEOUT 30)
+
+add_test(
+  NAME source_preparation.incremental
+  COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+    "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/source-preparation/incremental"
+    "-DTEST_GENERATOR=${CMAKE_GENERATOR}"
+    "-DTEST_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+    "-DTEST_ARCHIVE=${UGS_SRC_TGZ}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/source_preparation/RunSourcePreparationTest.cmake")
+set_tests_properties(source_preparation.incremental PROPERTIES
+  LABELS "build;incremental"
+  TIMEOUT 300)
