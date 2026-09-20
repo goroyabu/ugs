@@ -105,7 +105,8 @@ function(add_download_cleanup_target TARGET_NAME)
   endif()
   list(REMOVE_DUPLICATES _dirs)
   add_custom_target(${TARGET_NAME}
-    COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_BINARY_DIR}/vendor" "${CMAKE_BINARY_DIR}/generated" ${_dirs}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory
+      "${CMAKE_BINARY_DIR}/vendor" "${CMAKE_BINARY_DIR}/generated" ${_dirs}
     COMMENT "Remove build products and download cache(s): ${_dirs}")
 endfunction()
 
@@ -134,7 +135,7 @@ function(add_unpack_archive STAMP_FILE DEST_DIR ARCHIVE_PATH)
   set(_reset_command)
   if(UNPACK_RESET_PATH)
     list(APPEND _reset_command
-      COMMAND ${CMAKE_COMMAND} -E rm -rf "${UNPACK_RESET_PATH}")
+      COMMAND ${CMAKE_COMMAND} -E remove_directory "${UNPACK_RESET_PATH}")
   endif()
   add_custom_command(OUTPUT "${STAMP_FILE}"
     ${_reset_command}

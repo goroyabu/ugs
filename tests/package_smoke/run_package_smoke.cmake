@@ -48,8 +48,8 @@ set(_smoke_output "${PACKAGE_SMOKE_BINARY_DIR}/ugs-example.ps")
 file(REMOVE "${_smoke_output}")
 
 execute_process(
-  COMMAND "${CMAKE_CTEST_COMMAND}"
-    --test-dir "${PACKAGE_SMOKE_BINARY_DIR}"
+  COMMAND "${CMAKE_COMMAND}" -E chdir "${PACKAGE_SMOKE_BINARY_DIR}"
+    "${CMAKE_CTEST_COMMAND}"
     --output-on-failure
   RESULT_VARIABLE _run_result
 )

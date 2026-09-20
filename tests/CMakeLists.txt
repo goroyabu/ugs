@@ -189,3 +189,12 @@ add_test(
 set_tests_properties(source_preparation.incremental PROPERTIES
   LABELS "build;incremental"
   TIMEOUT 300)
+
+add_test(
+  NAME ci.workflow_policy
+  COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/ci/VerifyWorkflows.cmake")
+set_tests_properties(ci.workflow_policy PROPERTIES
+  LABELS "ci;policy"
+  TIMEOUT 30)

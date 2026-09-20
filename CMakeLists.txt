@@ -17,7 +17,9 @@ option(UGS_ALLOW_UNVERIFIED_ARCHIVES
 
 option(UGS_BUILD_XWTEST       "Build the legacy xwtest sample program" OFF)
 option(UGS_F77_COMPAT "Enable legacy F77 calling convention compatibility (e.g., allow argument mismatch for %VAL-style calls)" ON)
-option(UGS_ENABLE_GUI_SMOKE "Register the GUI/X11 smoke test case 01_smoke" ON)
+option(UGS_ENABLE_GUI_SMOKE
+  "Register the repository-owned X11 smoke tests 01_smoke and 03_visual_smoke"
+  ON)
 
 fetch_and_unpack_configure_dirs()
 

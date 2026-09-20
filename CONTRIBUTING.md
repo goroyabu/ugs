@@ -98,8 +98,10 @@ Select additional checks according to the change:
 Run regression tests for behavior changes. Keep expectations tied to the
 intended behavior, use isolated test output, and avoid exhaustive upstream
 coverage claims. The README describes current tests and their limitations.
-Linux CI runs smoke tests under Xvfb; macOS CI currently builds but executes
-only package verification, not the smoke-labeled font, PostScript, or X11 tests.
+Linux and macOS CI run the display-independent suite and installed-package
+acceptance. Linux additionally runs the actual UGS XWINDOW test under Xvfb;
+macOS does not run X11 tests. Dedicated Linux jobs verify the explicit offline
+path and the declared minimum CMake series with CMake 3.15.7.
 Report checks actually run, results, and relevant checks that could not run.
 Do not report a full GUI pass based on display-independent checks alone.
 
@@ -162,6 +164,13 @@ Keep long-lived documents self-contained. Issues and PRs record decisions and
 history but must not replace an explanation of the current contract. Link to
 upstream manuals when appropriate rather than copying them.
 
+Do not commit agent- or tool-generated planning artifacts, such as
+`docs/superpowers` specifications and implementation plans. Record working
+decisions, plans, and progress in the relevant Issue or PR, and incorporate
+durable outcomes into the canonical documentation when they change the
+repository's current contract. Keep temporary local planning notes untracked
+and remove them when they are no longer needed.
+
 The tracked root `AGENTS.md` contains stable scope, boundaries, verification
 principles, and pointers to canonical documents. Detailed development/release
 procedures belong here, user workflows and current test descriptions in the
@@ -173,10 +182,11 @@ extension mechanism; it can replace rather than compose with shared guidance.
 ## CI and Dependency Maintenance
 
 Preserve required checks and least-privilege access when modifying workflows.
-Review action/dependency changes and their verification impact. Current UGS CI
-uses version-tagged Actions; SHA pinning, explicit permissions, timeouts, and
-concurrency improvements are not yet fully implemented. Do not present them as
-existing guarantees or copy another project's dependency automation policy.
+Review action/dependency changes and their verification impact. UGS workflows
+pin Actions to reviewed commit SHAs with readable version comments, declare
+read-only contents permission and job timeouts, and cancel superseded pull-
+request runs. Keep those controls explicit and update pinned revisions
+deliberately; do not copy another project's dependency automation policy.
 
 Required checks are identified by job name. If job names change, update and
 verify the default-branch ruleset. Keep release-note categories synchronized
