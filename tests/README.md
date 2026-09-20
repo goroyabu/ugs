@@ -9,7 +9,7 @@ suite.
 
 | Contract | Evidence | Stable result |
 | --- | --- | --- |
-| The X11 test harness can open a viewable window | `01_smoke` | The process succeeds and prints the reviewed viewable-window message |
+| The repository-owned Xlib harness can open a viewable window | `01_smoke` | The process succeeds and prints the reviewed viewable-window message |
 | A representative UGS XWINDOW lifecycle and line-drawing path completes without a reported UGS error | `02_tryxw` | Initialization, device open and selection, line construction, write, and close complete with error level zero |
 | The X11 harness produces the reviewed reference frame in the controlled GUI smoke environment | `03_visual_smoke` | A fresh capture exactly matches `cases/03_visual_smoke/expected.ppm` |
 | The DUPLEX font supplies usable, distinct strokes for representative alphabetic and numeric characters | `04_duplex_glyph` | `A` and `2` both produce strokes and do not produce identical coordinates |
@@ -49,10 +49,12 @@ The current baseline deliberately does not guarantee:
 - X11 behavior on macOS CI, where display-dependent tests are not run; or
 - F2C language conformance or F2C's project-specific test matrix.
 
-`01_smoke` and `03_visual_smoke` exercise the repository's X11 harness.
-They do not call the UGS drawing API and must not be presented as full UGS
-rendering coverage. `02_tryxw` calls the actual UGS XWINDOW path, but currently
-asserts lifecycle and error-free execution rather than captured pixels.
+`01_smoke` and `03_visual_smoke` exercise the repository's small, independent
+Xlib harness. The harness uses fixed black-and-white primitives and does not
+compile upstream UGS sources. These tests do not call the UGS drawing API and
+must not be presented as full UGS rendering coverage. `02_tryxw` calls the
+actual UGS XWINDOW path, but currently asserts lifecycle and error-free
+execution rather than captured pixels.
 
 Image comparison strictness, environment control, and golden-image maintenance
 belong to [the visual comparison follow-up](https://github.com/goroyabu/ugs/issues/7).
