@@ -134,11 +134,14 @@ CTest. CTest executes checks; it does not build their executables for you.
 | `package_smoke` | Clean staged installation, installed-target discovery, example build and execution, and PostScript output validation | No |
 | `archive_hash.*` | Local, cached, and downloaded archive selection, strict SHA256 enforcement, unsupported opt-out warnings, and failure diagnostics | No |
 
+See [`tests/README.md`](tests/README.md) for the contracts, expectation sources,
+and deliberately deferred coverage behind these checks.
+
 The X11 harness checks are not comprehensive UGS rendering tests.
-`02_tryxw` prints UGS error state but does not explicitly assert those values.
+`02_tryxw` treats every reported UGS error level as a failure, but it does not
+compare rendered pixels.
 The PostScript regression checks the file and header, not full rendering
-correctness. The repository does not currently publish a more detailed test-
-contract map or claim comprehensive API coverage.
+correctness. The repository does not claim comprehensive API coverage.
 
 Select only the archive acquisition checks with
 `ctest --test-dir build -L archive-integrity --output-on-failure`.
