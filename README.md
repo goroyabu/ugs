@@ -353,7 +353,15 @@ and release procedures. [AGENTS.md](AGENTS.md) points coding agents to the same
 canonical guidance. Report suspected vulnerabilities privately as described in
 [SECURITY.md](SECURITY.md), rather than opening a public Issue.
 
-The test descriptions above state the current verification boundaries; a more
-detailed contract map is not yet provided. Repository-owned and upstream-
-derived license notices are still being investigated, and this README does not
-assign a license to upstream code.
+The test descriptions above state the current verification boundaries; see
+[`tests/README.md`](tests/README.md) for the detailed contract map.
+
+## License and Upstream Provenance
+
+Repository-maintained work is available under the [MIT License](LICENSE),
+subject to the boundary documented in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Downloaded UGS sources,
+upstream-derived files, and artifacts built from them are not relicensed by
+this repository. The notices document verified provenance, the xvertext
+notice, known gaps in upstream licensing information, and the current
+source-only distribution boundary.
