@@ -148,4 +148,3 @@ Confirm every new CI job passes. Verify the default-branch ruleset still names
 the unchanged required checks `Build and test (ubuntu-latest)` and
 `Build and test (macos-latest)`; update it only if GitHub reports different
 final job contexts.
-

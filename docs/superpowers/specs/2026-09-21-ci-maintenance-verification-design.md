@@ -80,4 +80,3 @@ will provide the authoritative Linux, macOS, offline, minimum-CMake, and Xvfb
 evidence. Required-check rules will be inspected after final job names are
 known; because the two required names remain stable, no ruleset mutation is
 expected.
-
