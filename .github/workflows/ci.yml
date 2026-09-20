@@ -20,6 +20,9 @@ jobs:
     name: Incremental source preparation (${{ matrix.generator }})
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      CC: gcc
+      FC: gfortran
     strategy:
       fail-fast: false
       matrix:
@@ -69,10 +72,15 @@ jobs:
         include:
           - name: ubuntu-latest
             os: ubuntu-24.04
+            cc: gcc
             run_x11: true
           - name: macos-latest
             os: macos-15
+            cc: clang
             run_x11: false
+
+    env:
+      CC: ${{ matrix.cc }}
 
     steps:
       - name: Checkout
@@ -132,6 +140,9 @@ jobs:
     name: Offline build and test (ubuntu-24.04)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      CC: gcc
+      FC: gfortran
 
     steps:
       - name: Checkout
@@ -186,6 +197,9 @@ jobs:
     name: Minimum CMake 3.15.7 (ubuntu-24.04)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      CC: gcc
+      FC: gfortran
 
     steps:
       - name: Checkout

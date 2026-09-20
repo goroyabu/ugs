@@ -17,6 +17,9 @@ jobs:
     name: GUI smoke diagnostics (ubuntu-latest)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      CC: gcc
+      FC: gfortran
 
     steps:
       - name: Checkout
