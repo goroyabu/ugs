@@ -27,8 +27,8 @@ maintenance repository's releases, not the upstream UGS source version.
 
 ### Prerequisites
 
-- CMake: the build declares a minimum of 3.15; that minimum is not currently
-  exercised in CI.
+- CMake: the build declares a minimum of 3.15; CI exercises the final 3.15
+  patch release, 3.15.7.
 - A C compiler and GNU Fortran. Other Fortran compilers are not currently
   verified; the build includes platform-specific compiler flags.
 - A build tool supported by CMake, such as Make. Generator coverage is not
@@ -267,17 +267,20 @@ Workflow definitions are the source of truth for current CI coverage:
 
 | Workflow/platform | Verification |
 | --- | --- |
-| [CI](.github/workflows/ci.yml), `ubuntu-latest`, C compiler and GNU Fortran | Build, `02_tryxw` under Xvfb, font/PostScript regressions, installation, package smoke |
-| [CI](.github/workflows/ci.yml), `macos-latest`, Apple toolchain and GNU Fortran | Build, installation, package smoke; no smoke-labeled tests are executed |
-| [GUI Smoke](.github/workflows/gui-smoke.yml), `ubuntu-latest` | Separate manual/scheduled diagnostic checks for `01_smoke` and `03_visual_smoke` |
+| [CI](.github/workflows/ci.yml), Ubuntu 24.04, C compiler and GNU Fortran | Build, all display-independent tests, `02_tryxw` under Xvfb, installation, and installed-package example |
+| [CI](.github/workflows/ci.yml), macOS 15, Apple toolchain and GNU Fortran | Build, all display-independent tests, installation, and installed-package example; X11 tests are not executed |
+| [CI](.github/workflows/ci.yml), Ubuntu 24.04 offline path | Verified local archive selection with `NET_FETCH=OFF`, build, all display-independent tests, installation, and installed-package example |
+| [CI](.github/workflows/ci.yml), Ubuntu 24.04 with CMake 3.15.7 | Minimum-version configure, build, all display-independent tests, installation, and installed-package example |
+| [GUI Smoke](.github/workflows/gui-smoke.yml), Ubuntu 24.04 | Separate manual/scheduled diagnostic checks for `01_smoke` and `03_visual_smoke` |
 
 GUI Smoke is not a required PR gate. Workflow configuration does not guarantee
 that scheduled execution is currently active; GitHub may disable scheduled
 workflows after repository inactivity. Check
 [Actions](https://github.com/goroyabu/ugs/actions) for current status and use
-manual dispatch when needed. The current CI does not verify the declared
-minimum CMake version or a complete offline workflow, and macOS does not run
-the smoke-labeled font, PostScript, or X11 tests.
+manual dispatch when needed. The current CI does not verify X11 behavior on
+macOS. The required Linux and macOS jobs retain their stable
+`ubuntu-latest` and `macos-latest` check-context names while using the fixed
+runner versions listed above.
 
 ## Known Limitations
 

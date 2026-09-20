@@ -17,6 +17,7 @@ suite.
 | An installed consumer can discover `ugs::ugs`, link it, and use a representative PostScript path | `package_smoke` | A clean staged install and consumer build succeed, and a fresh, nonempty `ugs-example.ps` has a PostScript header |
 | Selected upstream input is authenticated before use | `archive_hash.*` | Local, cached, and downloaded inputs obey the pinned SHA256 policy and the documented experimental exception |
 | Prepared upstream sources are incremental and generator-independent | `source_preparation.incremental` | An unchanged rebuild does not rewrite outputs, and a changed preparation input regenerates them with Make or Ninja |
+| CI retains its documented security and maintenance controls | `ci.workflow_policy` | Workflow text declares read-only permissions, cancellation policy, timeouts, pinned Actions, display selection, offline verification, and minimum-CMake coverage |
 
 These expectations are based on reviewed public workflows and semantic output,
 not on incidental full-file snapshots. The visual harness image is the one
@@ -62,3 +63,18 @@ Expected, actual, and difference artifact presentation belongs to
 [the artifact review follow-up](https://github.com/goroyabu/ugs/issues/6).
 CI platform selection and scheduling consume this contract but are maintained
 separately from the test behavior itself.
+
+## CI Execution
+
+The required Linux and macOS jobs run all tests except those labelled `x11`.
+Linux then runs the registered `x11` subset under Xvfb. Normal CI configures
+with `UGS_ENABLE_GUI_SMOKE=OFF`, so `01_smoke` and `03_visual_smoke` remain in
+the separate diagnostic GUI workflow while `02_tryxw` exercises the actual UGS
+XWINDOW path in required Linux CI.
+
+Dedicated Linux jobs repeat the display-independent suite through the
+`NET_FETCH=OFF` local-archive path and with CMake 3.15.7. The package test in
+each applicable job performs a clean staged installation and downstream
+consumer build. Broader functional and graphics contracts are tracked in
+[the layered coverage follow-up](https://github.com/goroyabu/ugs/issues/36);
+this execution matrix does not expand their scope by itself.
