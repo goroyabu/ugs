@@ -9,6 +9,48 @@ on:
   pull_request:
 
 jobs:
+  incremental-build:
+    name: Incremental source preparation (${{ matrix.generator }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        generator:
+          - Unix Makefiles
+          - Ninja
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gfortran \
+            libx11-dev \
+            libxaw7-dev \
+            libxmu-dev \
+            libxt-dev \
+            ninja-build
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build
+          -G "${{ matrix.generator }}"
+          -DNET_FETCH=ON
+          -DBUILD_TESTING=ON
+          -DUGS_ENABLE_GUI_SMOKE=OFF
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test incremental source preparation
+        run: >-
+          ctest --test-dir build
+          -R '^source_preparation\.'
+          --output-on-failure
+
   build-and-test:
     name: Build and test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

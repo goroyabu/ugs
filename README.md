@@ -301,8 +301,13 @@ and other build directories have their own `vendor` and `generated` trees.
 
 Maintain compatibility changes in
 [`cmake/PrepareUgsSources.cmake`](cmake/PrepareUgsSources.cmake), not by editing
-generated copies. Changes to source-preparation logic and incremental rebuilds
-are not currently covered by a dedicated regeneration test.
+generated copies. The maintained source inventory is defined once in
+[`cmake/UgsSourceManifest.cmake`](cmake/UgsSourceManifest.cmake). Changes to
+either file rerun source preparation in an existing build tree. Missing
+prepared outputs are recreated, while unchanged outputs retain their timestamps
+so they do not trigger unrelated recompilation. This incremental contract is
+tested with Unix Makefiles and Ninja; generator-specific behavior for Xcode and
+Visual Studio is not currently verified.
 
 ```bash
 cmake --build build --target clean_downloads
@@ -310,9 +315,11 @@ cmake --build build --target clean_downloads
 
 Despite its name, `clean_downloads` removes the current build's `vendor` and
 `generated` trees **as well as** the configured download cache. It preserves
-user-provided archives. Other build directories may share that cache. Cleanup
-and recovery are not currently covered by a dedicated test; a fresh build
-directory is the clearest way to start a new configuration.
+user-provided archives. Other build directories may share that cache. The next
+build re-extracts and prepares the sources in the same build tree. With
+`NET_FETCH=OFF`, recovery requires a valid user-provided archive in
+`ARCHIVE_DIR`; deleting a shared download cache does not create an offline
+fallback.
 
 ```bash
 cmake --build build --target uninstall

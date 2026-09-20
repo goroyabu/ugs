@@ -47,6 +47,7 @@ set(UGS_SRC_LOCAL   "${ARCHIVE_DIR}/ugs.tar.gz")
 resolve_input_file(UGS_SRC_TGZ "${UGS_SRC_URL}" "${_UGS_SRC_SHA256}" "${UGS_SRC_LOCAL}")
 add_unpack_archive("${UGS_SRC_ROOT}.stamp" "${VENDOR_ROOT}" "${UGS_SRC_TGZ}"
   COMMENT "Unpacking UGS sources"
+  RESET_PATH "${UGS_SRC_ROOT}"
   COMMAND ${CMAKE_COMMAND} -E tar xzf)
 add_unpack_target(unpack)
 
@@ -55,38 +56,9 @@ set(UGS_SOURCE_TREE "${UGS_SRC_ROOT}/src.2.10e")
 # ------------------------------------------------------------
 # Enumerate sources
 # ------------------------------------------------------------
-set(UGS_SOURCE_NAMES
-  aux.c ran.f ug2dhg.f ug2dhp.f ug3lin.f ug3mrk.f ug3pln.f ug3pmk.f
-  ug3trn.f ug3txt.f ug3wrd.f ugb001.f ugb002.f ugb003.f ugb004.f ugb005.f
-  ugb006.f ugb007.f ugb008.f ugb009.f ugb010.f ugb011.f ugb012.f ugb013.f
-  ugb014.f ugb015.f ugc001.f ugc002.f ugc003.f ugc004.f ugc005.f ugc006.f
-  ugc007.f ugclos.f ugcnt1.f ugcnt2.f ugcnt3.f ugcnt4.f ugcntr.f ugcnvf.f
-  ugctol.f ugd001.f ugd002.f ugd003.f ugddat.f ugdefl.f ugdsab.f ugdspc.f
-  ugdupl.f uge001.f uge003.f ugectl.f ugenab.f ugevnt.f ugf001.f ugf002.f
-  ugf003.f ugf004.f ugfont.f ugg001.f ugg002.f ugg003.f ugg004.f ugg005.f
-  uginfo.f uginit.f uglgax.f uglgdx.f ugline.f uglnax.f uglndx.f ugmark.f
-  ugmctl.f  ugmesh.f ugnucl.f ugoption.f ugpfil.f ugpict.f ugplin.f ugpmrk.f
-  ugproj.f ugqctr.f ugrerr.f ugscin.f ugshld.f ugsimp.f ugslct.f ugtext.f
-  ugtran.f ugwdow.f ugwrit.f ugxerr.f ugxhch.f ugxsym.f ugxtxt.f ugz001.f
-  ugz002.f ugz003.f ugz006.f uge002.F ugfrev.F uggetv.F ugopen.F ugz005.F
-  bit/btest.c bit/iand.c bit/ibclr.c bit/ibset.c bit/ior.c bit/ishft.c bit/ishftc.c
-  drivers/epsf.f drivers/postscr.f drivers/rotated.c
-  drivers/xwindow.f drivers/xwindowc.c
-  dummies/ugcw01.f dummies/uggd01.f dummies/uggi01.f
-  dummies/uggks_dummy.f dummies/uggr01.f dummies/uggs01.f dummies/ugin01.f dummies/ugix01.f
-  dummies/ugmt01.f dummies/ugpi01.f dummies/ugpl01.f dummies/ugpm01.f dummies/ugps01.f
-  dummies/ugpu01.f dummies/ugpx01.f dummies/ugqm01.f dummies/ugsa01.f dummies/ugsb01.f
-  dummies/ugsc01.f dummies/ugsd01.f dummies/ugse01.f dummies/ugsixel_dummy.f dummies/ugsx01.f
-  dummies/ugta01.f dummies/ugtd01.f dummies/ugts01.f dummies/ugtx01.f dummies/ugud01.f
-  dummies/uguis_dummy.f dummies/ugus01.f dummies/ugux01.f dummies/ugvf01.f dummies/ugvi01.f
-  dummies/ugvs01.f dummies/ugwa01.f dummies/ugwb01.f dummies/ugwc01.f dummies/ugwd01.f
-  dummies/ugwe01.f dummies/ugwz01.f dummies/ugxa01.f dummies/ugxb01.f dummies/ugxc01.f
-  dummies/ugxs01.f dummies/ugzz01.f
-)
-
-foreach(src_name IN LISTS UGS_SOURCE_NAMES)
-  # sources will be generated into GEN_DIR at build time
-endforeach()
+set(UGS_SOURCE_MANIFEST
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/UgsSourceManifest.cmake")
+include("${UGS_SOURCE_MANIFEST}")
 
 # ------------------------------------------------------------
 # Targets
@@ -98,6 +70,20 @@ foreach(src_name IN LISTS UGS_SOURCE_NAMES)
   list(APPEND UGS_SOURCE_PATHS "${GEN_DIR}/${src_name}")
 endforeach()
 
+set(UGS_PREPARED_OUTPUTS ${UGS_SOURCE_PATHS})
+foreach(system_name IN LISTS UGS_SYSTEM_ROOT_FILES)
+  list(APPEND UGS_PREPARED_OUTPUTS "${GEN_DIR}/UGSYSTEM_${system_name}")
+endforeach()
+foreach(system_name IN LISTS UGS_SYSTEM_DRIVER_FILES)
+  list(APPEND UGS_PREPARED_OUTPUTS
+    "${GEN_DIR}/drivers/UGSYSTEM_${system_name}")
+endforeach()
+foreach(relative_path IN LISTS
+    UGS_COPIED_ASSETS UGS_GENERATED_HEADERS UGS_TEST_ONLY_PREPARED_SOURCES)
+  list(APPEND UGS_PREPARED_OUTPUTS "${GEN_DIR}/${relative_path}")
+endforeach()
+list(REMOVE_DUPLICATES UGS_PREPARED_OUTPUTS)
+
 set(_ugs_fixed_form_sources)
 foreach(src_path IN LISTS UGS_SOURCE_PATHS)
   if(src_path MATCHES "\\.f$")
@@ -105,15 +91,7 @@ foreach(src_path IN LISTS UGS_SOURCE_PATHS)
   endif()
 endforeach()
 
-set(UGS_GENERATED_EXTRA
-  ${GEN_DIR}/drivers/cursor1.bmp
-  ${GEN_DIR}/drivers/cursor2.bmp
-  ${GEN_DIR}/drivers/icon.bmp
-  ${GEN_DIR}/drivers/rotated.c
-  ${GEN_DIR}/drivers/xwindowc_selftest.c
-)
-
-set_source_files_properties(${UGS_SOURCE_PATHS} ${UGS_GENERATED_EXTRA}
+set_source_files_properties(${UGS_PREPARED_OUTPUTS}
   PROPERTIES GENERATED TRUE
 )
 if(_ugs_fixed_form_sources)
@@ -122,19 +100,19 @@ if(_ugs_fixed_form_sources)
   )
 endif()
 
-add_custom_command(
-  OUTPUT "${GEN_DIR}/prepare_sources.stamp"
-  COMMAND ${CMAKE_COMMAND}
-    -DUGS_SOURCE_TREE="${UGS_SOURCE_TREE}"
-    -DUGS_GEN_DIR="${GEN_DIR}"
-    -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrepareUgsSources.cmake"
-  COMMAND ${CMAKE_COMMAND} -E touch "${GEN_DIR}/prepare_sources.stamp"
-  DEPENDS "${UGS_SRC_ROOT}.stamp"
-  COMMENT "Preparing patched/generated UGS sources"
-)
-
 add_custom_target(prepare_sources
-  DEPENDS "${GEN_DIR}/prepare_sources.stamp"
+  COMMAND ${CMAKE_COMMAND}
+    "-DUGS_SOURCE_TREE=${UGS_SOURCE_TREE}"
+    "-DUGS_GEN_DIR=${GEN_DIR}"
+    "-DUGS_SOURCE_MANIFEST=${UGS_SOURCE_MANIFEST}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrepareUgsSources.cmake"
+  BYPRODUCTS ${UGS_PREPARED_OUTPUTS}
+  DEPENDS
+    "${UGS_SRC_ROOT}.stamp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrepareUgsSources.cmake"
+    "${UGS_SOURCE_MANIFEST}"
+  COMMENT "Preparing patched/generated UGS sources"
+  VERBATIM
 )
 
 add_library(${PROJECT_NAME} STATIC ${UGS_SOURCE_PATHS})
