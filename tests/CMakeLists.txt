@@ -148,6 +148,47 @@ if(EXISTS "${_invalid_polygon_src}")
       LABELS "contract;error")
 endif()
 
+set(_view_state_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/08_view_state/view_state_contract.f90")
+if(EXISTS "${_view_state_src}" AND EXISTS "${_contract_program_script}")
+  add_executable(view_state_contract "${_view_state_src}")
+  target_link_libraries(view_state_contract PRIVATE ugs)
+  target_include_directories(view_state_contract PRIVATE ${GEN_DIR})
+
+  set(_view_state_work_dir "${CMAKE_BINARY_DIR}/test-artifacts/08_view_state")
+  file(MAKE_DIRECTORY "${_view_state_work_dir}")
+
+  add_test(NAME 08_view_state
+           COMMAND ${CMAKE_COMMAND}
+             -DCONTRACT_PROGRAM=$<TARGET_FILE:view_state_contract>
+             -DCONTRACT_OUTPUT=${_view_state_work_dir}/view-state-output.ps
+             -P ${_contract_program_script})
+  set_tests_properties(08_view_state
+    PROPERTIES
+      LABELS "contract;coordinates;postscript"
+      WORKING_DIRECTORY "${_view_state_work_dir}")
+endif()
+
+set(_window_clipping_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/09_window_clipping/window_clipping_contract.f90")
+set(_window_clipping_script "${CMAKE_CURRENT_SOURCE_DIR}/cases/09_window_clipping/run_window_clipping_contract.cmake")
+if(EXISTS "${_window_clipping_src}" AND EXISTS "${_window_clipping_script}")
+  add_executable(window_clipping_contract "${_window_clipping_src}")
+  target_link_libraries(window_clipping_contract PRIVATE ugs)
+  target_include_directories(window_clipping_contract PRIVATE ${GEN_DIR})
+
+  set(_window_clipping_work_dir "${CMAKE_BINARY_DIR}/test-artifacts/09_window_clipping")
+  file(MAKE_DIRECTORY "${_window_clipping_work_dir}")
+
+  add_test(NAME 09_window_clipping
+           COMMAND ${CMAKE_COMMAND}
+             -DWINDOW_CONTRACT_BIN=$<TARGET_FILE:window_clipping_contract>
+             -DPOSTSCRIPT_OUTPUT=${_window_clipping_work_dir}/window-clipping-output.ps
+             -P ${_window_clipping_script})
+  set_tests_properties(09_window_clipping
+    PROPERTIES
+      LABELS "contract;coordinates;clipping;postscript"
+      WORKING_DIRECTORY "${_window_clipping_work_dir}")
+endif()
+
 set(_package_smoke_src_dir "${PROJECT_SOURCE_DIR}/examples/cmake")
 set(_package_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke/run_package_smoke.cmake")
 if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt"
