@@ -13,13 +13,7 @@ endif()
 run_postscript_program(
   "${EXTENDED_TEXT_CONTRACT_BIN}"
   "${UGXTXT_OUTPUT}"
-  "UGXTXT"
-  "extended-text-ugxtxt.ps")
-run_postscript_program(
-  "${EXTENDED_TEXT_CONTRACT_BIN}"
-  "${UGPLIN_OUTPUT}"
-  "UGCTOL+UGPLIN"
-  "extended-text-ugplin.ps")
+  "${UGPLIN_OUTPUT}")
 read_postscript_drawing_commands("${UGXTXT_OUTPUT}" ugxtxt_commands)
 read_postscript_drawing_commands("${UGPLIN_OUTPUT}" ugplin_commands)
 

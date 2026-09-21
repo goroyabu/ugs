@@ -9,50 +9,35 @@ program extended_text_contract
   integer :: coordinate_count
   integer :: ugelv, ugeix
   character(len=8) :: ugenm
-  character(len=32) :: mode
-  character(len=64) :: output_file
   common /ugerrd/ ugelv, ugenm, ugeix
   save /ugerrd/
 
-  if (command_argument_count() /= 2) then
-    print *, 'usage: extended_text_contract MODE OUTPUT_FILE'
+  call uginit('CLEAR', segment, lseg)
+  call require_clear_error('UGXTXT UGINIT')
+  call ugfont('DUPLEX')
+  call require_clear_error('UGXTXT UGFONT')
+  call ugxtxt('SIZE=0.1,FIXSIZE', 0.2, 0.3, 'AB', ' L', segment)
+  call require_clear_error('UGXTXT text construction')
+  call write_segment('extended-text-ugxtxt.ps', 51, segment, 'UGXTXT')
+
+  blanking_bits = 0
+  call uginit('CLEAR', segment, lseg)
+  call require_clear_error('UGCTOL UGINIT')
+  call ugfont('DUPLEX')
+  call require_clear_error('UGCTOL UGFONT')
+  call ugctol('SIZE=0.1,FIXSIZE', 0.2, 0.3, 'AB', ' L', nmax, &
+              x, y, coordinate_count, blanking_bits)
+  call require_clear_error('UGCTOL text conversion')
+  if (coordinate_count <= 0) then
+    print *, 'UGCTOL text conversion: expected visible stroke coordinates'
     stop 1
   end if
-  call get_command_argument(1, mode)
-  call get_command_argument(2, output_file)
+  call ugplin(' ', x, y, coordinate_count, blanking_bits, &
+              -coordinate_count, segment)
+  call require_clear_error('UGPLIN text construction')
+  call write_segment('extended-text-ugplin.ps', 52, segment, 'UGCTOL+UGPLIN')
 
-  select case (trim(mode))
-  case ('UGXTXT')
-    call uginit('CLEAR', segment, lseg)
-    call require_clear_error('UGXTXT UGINIT')
-    call ugfont('DUPLEX')
-    call require_clear_error('UGXTXT UGFONT')
-    call ugxtxt('SIZE=0.1,FIXSIZE', 0.2, 0.3, 'AB', ' L', segment)
-    call require_clear_error('UGXTXT text construction')
-  case ('UGCTOL+UGPLIN')
-    blanking_bits = 0
-    call uginit('CLEAR', segment, lseg)
-    call require_clear_error('UGCTOL UGINIT')
-    call ugfont('DUPLEX')
-    call require_clear_error('UGCTOL UGFONT')
-    call ugctol('SIZE=0.1,FIXSIZE', 0.2, 0.3, 'AB', ' L', nmax, &
-                x, y, coordinate_count, blanking_bits)
-    call require_clear_error('UGCTOL text conversion')
-    if (coordinate_count <= 0) then
-      print *, 'UGCTOL text conversion: expected visible stroke coordinates'
-      stop 1
-    end if
-    call ugplin(' ', x, y, coordinate_count, blanking_bits, &
-                -coordinate_count, segment)
-    call require_clear_error('UGPLIN text construction')
-  case default
-    print *, 'unknown extended text mode: ', trim(mode)
-    stop 1
-  end select
-
-  call write_segment(trim(output_file), 51, segment, trim(mode))
-
-  print *, trim(mode), ' extended text drawing contract passed'
+  print *, 'Extended text drawing contract passed'
 
 contains
 
