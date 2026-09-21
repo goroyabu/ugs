@@ -1,20 +1,15 @@
-function(run_postscript_program executable)
+function(run_postscript_program executable output_file)
   if(NOT EXISTS "${executable}")
     message(FATAL_ERROR "PostScript contract executable is missing: ${executable}")
   endif()
-  if(NOT ARGN)
-    message(FATAL_ERROR "At least one PostScript contract output path is required")
+  if(output_file STREQUAL "")
+    message(FATAL_ERROR "A PostScript contract output path is required")
   endif()
 
-  foreach(output_file IN LISTS ARGN)
-    if(output_file STREQUAL "")
-      message(FATAL_ERROR "PostScript contract output paths must not be empty")
-    endif()
-    file(REMOVE "${output_file}")
-  endforeach()
+  file(REMOVE "${output_file}")
 
   execute_process(
-    COMMAND "${CMAKE_COMMAND}" -E env LC_ALL=C TZ=UTC "${executable}"
+    COMMAND "${CMAKE_COMMAND}" -E env LC_ALL=C TZ=UTC "${executable}" ${ARGN}
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     RESULT_VARIABLE contract_result
     OUTPUT_VARIABLE contract_stdout
@@ -26,11 +21,9 @@ function(run_postscript_program executable)
       "stderr:\n${contract_stderr}")
   endif()
 
-  foreach(output_file IN LISTS ARGN)
-    if(NOT EXISTS "${output_file}")
-      message(FATAL_ERROR "PostScript output was not created: ${output_file}")
-    endif()
-  endforeach()
+  if(NOT EXISTS "${output_file}")
+    message(FATAL_ERROR "PostScript output was not created: ${output_file}")
+  endif()
 endfunction()
 
 function(read_postscript_drawing_commands output_file result_variable)
