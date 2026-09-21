@@ -22,7 +22,14 @@ function(run_postscript_program executable output_file)
   endif()
 
   if(NOT EXISTS "${output_file}")
-    message(FATAL_ERROR "PostScript output was not created: ${output_file}")
+    file(GLOB contract_directory_entries
+      RELATIVE "${CMAKE_CURRENT_BINARY_DIR}"
+      "${CMAKE_CURRENT_BINARY_DIR}/*")
+    message(FATAL_ERROR
+      "PostScript output was not created: ${output_file}\n"
+      "Working directory entries: ${contract_directory_entries}\n"
+      "stdout:\n${contract_stdout}\n"
+      "stderr:\n${contract_stderr}")
   endif()
 endfunction()
 
