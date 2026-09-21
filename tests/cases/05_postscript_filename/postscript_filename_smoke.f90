@@ -24,7 +24,9 @@ program postscript_filename_smoke
   end if
 
   call uginit('CLEAR', seg, lseg)
-  call ugopen('POSTSCR,DDNAME=' // output_file, 1)
+  call ugopen('POSTSCR,DDNAME=' // output_file // &
+              ',XMIN=150,XMAX=3150,YMIN=150,YMAX=2400,' // &
+              'RUCMX=118.11024,RUCMY=118.11024', 1)
   call ugslct(' ', 1)
 
   call ugline(' ', 0.1, 0.1, 0, seg)

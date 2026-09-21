@@ -92,7 +92,8 @@ else()
 endif()
 
 set(_postscript_filename_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/05_postscript_filename/postscript_filename_smoke.f90")
-if(EXISTS "${_postscript_filename_src}")
+set(_postscript_contract_script "${CMAKE_CURRENT_SOURCE_DIR}/cases/05_postscript_filename/run_postscript_contract.cmake")
+if(EXISTS "${_postscript_filename_src}" AND EXISTS "${_postscript_contract_script}")
   add_executable(postscript_filename_smoke "${_postscript_filename_src}")
   target_link_libraries(postscript_filename_smoke PRIVATE ugs)
 
@@ -100,13 +101,51 @@ if(EXISTS "${_postscript_filename_src}")
   file(MAKE_DIRECTORY "${_postscript_filename_work_dir}")
 
   add_test(NAME 05_postscript_filename
-           COMMAND $<TARGET_FILE:postscript_filename_smoke>)
+           COMMAND ${CMAKE_COMMAND}
+             -DPOSTSCRIPT_CONTRACT_BIN=$<TARGET_FILE:postscript_filename_smoke>
+             -DPOSTSCRIPT_OUTPUT=${_postscript_filename_work_dir}/postscript-output.ps
+             -P ${_postscript_contract_script})
   set_tests_properties(05_postscript_filename
     PROPERTIES
-      LABELS "smoke;postscript"
+      LABELS "contract;postscript;smoke"
       WORKING_DIRECTORY "${_postscript_filename_work_dir}")
 else()
-  message(STATUS "postscript_filename_smoke source missing; skipping case 05_postscript_filename.")
+  message(STATUS "PostScript contract inputs missing; skipping case 05_postscript_filename.")
+endif()
+
+set(_postscript_lifecycle_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/06_postscript_lifecycle/postscript_lifecycle_contract.f90")
+set(_contract_program_script "${CMAKE_CURRENT_SOURCE_DIR}/contracts/RunContractProgram.cmake")
+if(EXISTS "${_postscript_lifecycle_src}" AND EXISTS "${_contract_program_script}")
+  add_executable(postscript_lifecycle_contract "${_postscript_lifecycle_src}")
+  target_link_libraries(postscript_lifecycle_contract PRIVATE ugs)
+  target_include_directories(postscript_lifecycle_contract PRIVATE ${GEN_DIR})
+
+  set(_postscript_lifecycle_work_dir "${CMAKE_BINARY_DIR}/test-artifacts/06_postscript_lifecycle")
+  file(MAKE_DIRECTORY "${_postscript_lifecycle_work_dir}")
+
+  add_test(NAME 06_postscript_lifecycle
+           COMMAND ${CMAKE_COMMAND}
+             -DCONTRACT_PROGRAM=$<TARGET_FILE:postscript_lifecycle_contract>
+             -DCONTRACT_OUTPUT=${_postscript_lifecycle_work_dir}/lifecycle-output.ps
+             -P ${_contract_program_script})
+  set_tests_properties(06_postscript_lifecycle
+    PROPERTIES
+      LABELS "contract;lifecycle;postscript"
+      WORKING_DIRECTORY "${_postscript_lifecycle_work_dir}")
+endif()
+
+set(_invalid_polygon_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/07_invalid_polygon/invalid_polygon_contract.f90")
+if(EXISTS "${_invalid_polygon_src}")
+  add_executable(invalid_polygon_contract "${_invalid_polygon_src}")
+  target_link_libraries(invalid_polygon_contract PRIVATE ugs)
+  target_include_directories(invalid_polygon_contract PRIVATE ${GEN_DIR})
+
+  add_test(NAME 07_invalid_polygon_error
+           COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C TZ=UTC
+             $<TARGET_FILE:invalid_polygon_contract>)
+  set_tests_properties(07_invalid_polygon_error
+    PROPERTIES
+      LABELS "contract;error")
 endif()
 
 set(_package_smoke_src_dir "${PROJECT_SOURCE_DIR}/examples/cmake")
