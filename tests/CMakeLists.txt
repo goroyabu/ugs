@@ -212,6 +212,29 @@ if(EXISTS "${_extended_text_src}" AND EXISTS "${_extended_text_script}")
       WORKING_DIRECTORY "${_extended_text_work_dir}")
 endif()
 
+set(_three_d_projection_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/11_3d_projection/three_d_projection_contract.f90")
+set(_three_d_projection_script "${CMAKE_CURRENT_SOURCE_DIR}/cases/11_3d_projection/run_three_d_projection_contract.cmake")
+if(EXISTS "${_three_d_projection_src}" AND EXISTS "${_three_d_projection_script}")
+  add_executable(three_d_projection_contract "${_three_d_projection_src}")
+  target_link_libraries(three_d_projection_contract PRIVATE ugs)
+  target_include_directories(three_d_projection_contract PRIVATE ${GEN_DIR})
+
+  set(_three_d_projection_work_dir "${CMAKE_BINARY_DIR}/test-artifacts/11_3d_projection")
+  file(MAKE_DIRECTORY "${_three_d_projection_work_dir}")
+
+  add_test(NAME 11_3d_projection
+           COMMAND ${CMAKE_COMMAND}
+             -DTHREE_D_CONTRACT_BIN=$<TARGET_FILE:three_d_projection_contract>
+             -DSTATE_OUTPUT=${_three_d_projection_work_dir}/three-d-state.ps
+             -DPARALLEL_OUTPUT=${_three_d_projection_work_dir}/three-d-parallel.ps
+             -DPOINT_OUTPUT=${_three_d_projection_work_dir}/three-d-point.ps
+             -P ${_three_d_projection_script})
+  set_tests_properties(11_3d_projection
+    PROPERTIES
+      LABELS "contract;3d;coordinates;postscript"
+      WORKING_DIRECTORY "${_three_d_projection_work_dir}")
+endif()
+
 set(_package_smoke_src_dir "${PROJECT_SOURCE_DIR}/examples/cmake")
 set(_package_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke/run_package_smoke.cmake")
 if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt"
