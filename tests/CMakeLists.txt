@@ -235,6 +235,18 @@ if(EXISTS "${_three_d_projection_src}" AND EXISTS "${_three_d_projection_script}
       WORKING_DIRECTORY "${_three_d_projection_work_dir}")
 endif()
 
+set(_algorithm_linkage_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/12_algorithm_linkage/algorithm_linkage_contract.f90")
+if(EXISTS "${_algorithm_linkage_src}")
+  add_executable(algorithm_linkage_contract "${_algorithm_linkage_src}")
+  target_link_libraries(algorithm_linkage_contract PRIVATE ugs)
+
+  add_test(NAME 12_algorithm_linkage
+           COMMAND $<TARGET_FILE:algorithm_linkage_contract>)
+  set_tests_properties(12_algorithm_linkage
+    PROPERTIES
+      LABELS "contract;algorithms;linkage")
+endif()
+
 set(_package_smoke_src_dir "${PROJECT_SOURCE_DIR}/examples/cmake")
 set(_package_smoke_script "${CMAKE_CURRENT_SOURCE_DIR}/package_smoke/run_package_smoke.cmake")
 if(EXISTS "${_package_smoke_src_dir}/CMakeLists.txt"
