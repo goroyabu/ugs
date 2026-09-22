@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(ugs VERSION 0.2.0 LANGUAGES C Fortran)
+project(ugs VERSION 0.3.0 LANGUAGES C Fortran)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
