@@ -19,6 +19,7 @@ suite.
 | Drawing-space and window state round-trip through their public interfaces | `08_view_state` | `UGDSPC` and `UGWDOW` return the non-square drawing space, affinity, distinct view port, and world window that were set, within 16 scaled single-precision epsilons |
 | The current window maps and clips line geometry when a segment is written | `09_window_clipping` | Focused PostScript commands show an inside line at its mapped coordinates, a crossing line clipped to both window edges, and no path for an entirely outside line |
 | Extended text follows the documented stroke-conversion drawing path | `10_extended_text` | `UGXTXT` and `UGCTOL` followed by `UGPLIN` produce the same nonempty visible PostScript line geometry for a representative extended string |
+| Public 3D view and projection state remains usable through a representative line path | `11_3d_projection` | `UG3WRD` and `UG3TRN` round-trip reviewed state; a new picture preserves the 3D world state and resets the transformation state; `UG3PLN` produces the reviewed parallel-projection commands and a distinct visible point projection |
 | An installed consumer can discover `ugs::ugs`, link it, and use a representative PostScript path | `package_smoke` | A clean staged install and consumer build succeed, and a fresh, nonempty `ugs-example.ps` has a PostScript header |
 | Selected upstream input is authenticated before use | `archive_hash.*` | Local, cached, and downloaded inputs obey the pinned SHA256 policy and the documented experimental exception |
 | Prepared upstream sources are incremental and generator-independent | `source_preparation.incremental` | An unchanged rebuild does not rewrite outputs, and a changed preparation input regenerates them with Make or Ninja |
@@ -37,8 +38,9 @@ contracts, followed by upstream interface descriptions and examples, reviewed
 behavior of the pinned source, and independently reproduced observations. The
 font selection, text conversion and positioning, POSTSCR lifecycle, device
 properties, invalid-polygon error tuple, drawing-space and window state,
-write-time clipping, line output, and extended-text equivalence in cases 04
-through 10 are based on `doc/ugpgmdoc.txt` from the pinned upstream archive.
+write-time clipping, line output, extended-text equivalence, and public 3D view,
+transformation, and polyline routines in cases 04 through 11 are based on
+`doc/ugpgmdoc.txt` from the pinned upstream archive.
 SIMPLEX minimizes the strokes used for each extended character; DUPLEX adds
 doubled strokes and serifs. Both are UGS stroke fonts rather than
 operating-system fonts. Source review is used to reconcile that historical
@@ -50,9 +52,11 @@ examples. Oracles check the narrowest stable public result available: device
 state, numeric text positions, stroke coordinates, and UGS error values for
 direct routine contracts, and selected page and drawing commands for
 PostScript output. The extended-text case compares only the visible drawing
-commands from the two documented construction paths. Complete internal segment
-arrays, complete PostScript files, and rendered images are not snapshots unless
-a separate reviewed contract requires them.
+commands from the two documented construction paths. The 3D case fixes the
+parallel-projection command sequence but checks point projection by command
+shape and visible divergence, avoiding a broad coordinate snapshot. Complete
+internal segment arrays, complete PostScript files, and rendered images are not
+snapshots unless a separate reviewed contract requires them.
 
 The state round-trip and text-layout checks reject non-finite values and allow
 16 single-precision epsilons scaled to the expected magnitude. This leaves a
@@ -68,7 +72,8 @@ line output has focused coordinate mapping and clipping coverage; and font
 selection, fixed-size layout queries, one conversion boundary, and a
 representative extended-text drawing path have focused coverage. Broader 2D
 primitives and segment operations, comprehensive font and text behavior, EPSF,
-and 3D contracts remain under Issue #36.
+standalone projection helpers, and higher-level 3D operations remain under
+Issue #36.
 
 ## Failure and Isolation Rules
 
@@ -101,8 +106,9 @@ The current baseline deliberately does not guarantee:
   exact glyph appearance, or complete `UGXTXT` behavior;
 - EPSF behavior, whose available implementation is not described by the
   programming-manual POSTSCR section used for the current contracts;
-- shields, broader window/clipping combinations, segment operations,
-  higher-level operations, or 3D behavior;
+- shields, broader window/clipping combinations, or segment operations;
+- standalone `UGTRAN` and `UGPROJ` behavior, broad 3D clipping, 3D text,
+  mesh and contour operations, or other higher-level 3D behavior;
 - Windows, cross-compilation, non-GNU Fortran compilers, or shared libraries;
 - X11 behavior on macOS CI, where display-dependent tests are not run; or
 - F2C language conformance or F2C's project-specific test matrix.
@@ -132,7 +138,7 @@ XWINDOW path in required Linux CI.
 Dedicated Linux jobs repeat the display-independent suite through the
 `NET_FETCH=OFF` local-archive path and with CMake 3.15.7. The package test in
 each applicable job performs a clean staged installation and downstream
-consumer build. Cases 04 through 10 are display-independent and therefore run
+consumer build. Cases 04 through 11 are display-independent and therefore run
 in the normal supported selection without an X server. Broader functional and
 graphics contracts are tracked in
 [the layered coverage follow-up](https://github.com/goroyabu/ugs/issues/36);

@@ -64,3 +64,19 @@ function(read_postscript_drawing_commands output_file result_variable)
 
   set(${result_variable} "${drawing_commands}" PARENT_SCOPE)
 endfunction()
+
+function(require_visible_postscript_lines commands_variable label)
+  set(commands "${${commands_variable}}")
+  set(line_count 0)
+  foreach(command IN LISTS commands)
+    if(command MATCHES "^[0-9-]+ [0-9-]+ D$")
+      math(EXPR line_count "${line_count} + 1")
+    endif()
+  endforeach()
+
+  list(FIND commands "S" stroke_index)
+  if(line_count EQUAL 0 OR stroke_index EQUAL -1)
+    message(FATAL_ERROR
+      "${label} did not contain visible line and stroke commands: ${commands}")
+  endif()
+endfunction()
