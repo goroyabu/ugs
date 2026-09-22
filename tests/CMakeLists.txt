@@ -77,18 +77,19 @@ else()
   message(STATUS "tryxw_smoke source missing; skipping case 02_tryxw.")
 endif()
 
-set(_duplex_glyph_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/04_duplex_glyph/duplex_glyph_smoke.f90")
-if(EXISTS "${_duplex_glyph_src}")
-  add_executable(duplex_glyph_smoke "${_duplex_glyph_src}")
-  target_link_libraries(duplex_glyph_smoke PRIVATE ugs)
+set(_font_contract_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/04_font_contract/font_contract.f90")
+if(EXISTS "${_font_contract_src}")
+  add_executable(font_contract "${_font_contract_src}")
+  target_link_libraries(font_contract PRIVATE ugs)
 
-  add_test(NAME 04_duplex_glyph
-           COMMAND $<TARGET_FILE:duplex_glyph_smoke>)
-  set_tests_properties(04_duplex_glyph
+  add_test(NAME 04_font_contract
+           COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C TZ=UTC
+             $<TARGET_FILE:font_contract>)
+  set_tests_properties(04_font_contract
     PROPERTIES
-      LABELS "smoke;font")
+      LABELS "contract;font;text")
 else()
-  message(STATUS "duplex_glyph_smoke source missing; skipping case 04_duplex_glyph.")
+  message(STATUS "Font contract source missing; skipping case 04_font_contract.")
 endif()
 
 set(_postscript_filename_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/05_postscript_filename/postscript_filename_smoke.f90")
@@ -187,6 +188,28 @@ if(EXISTS "${_window_clipping_src}" AND EXISTS "${_window_clipping_script}")
     PROPERTIES
       LABELS "contract;coordinates;clipping;postscript"
       WORKING_DIRECTORY "${_window_clipping_work_dir}")
+endif()
+
+set(_extended_text_src "${CMAKE_CURRENT_SOURCE_DIR}/cases/10_extended_text/extended_text_contract.f90")
+set(_extended_text_script "${CMAKE_CURRENT_SOURCE_DIR}/cases/10_extended_text/run_extended_text_contract.cmake")
+if(EXISTS "${_extended_text_src}" AND EXISTS "${_extended_text_script}")
+  add_executable(extended_text_contract "${_extended_text_src}")
+  target_link_libraries(extended_text_contract PRIVATE ugs)
+  target_include_directories(extended_text_contract PRIVATE ${GEN_DIR})
+
+  set(_extended_text_work_dir "${CMAKE_BINARY_DIR}/test-artifacts/10_extended_text")
+  file(MAKE_DIRECTORY "${_extended_text_work_dir}")
+
+  add_test(NAME 10_extended_text
+           COMMAND ${CMAKE_COMMAND}
+             -DEXTENDED_TEXT_CONTRACT_BIN=$<TARGET_FILE:extended_text_contract>
+             -DUGXTXT_OUTPUT=${_extended_text_work_dir}/extended-text-ugxtxt.ps
+             -DUGPLIN_OUTPUT=${_extended_text_work_dir}/extended-text-ugplin.ps
+             -P ${_extended_text_script})
+  set_tests_properties(10_extended_text
+    PROPERTIES
+      LABELS "contract;font;text;postscript"
+      WORKING_DIRECTORY "${_extended_text_work_dir}")
 endif()
 
 set(_package_smoke_src_dir "${PROJECT_SOURCE_DIR}/examples/cmake")

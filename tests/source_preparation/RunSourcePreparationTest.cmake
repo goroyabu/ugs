@@ -159,10 +159,18 @@ run_checked("Initial nested build"
 
 set(aux "${build_dir}/generated/aux.c")
 set(postscr "${build_dir}/generated/drivers/postscr.f")
+set(ugfont "${build_dir}/generated/ugfont.f")
+set(ugopen "${build_dir}/generated/ugopen.F")
+set(ugnucl "${build_dir}/generated/ugnucl.f")
+set(ugsimp "${build_dir}/generated/ugsimp.f")
+set(ugdupl "${build_dir}/generated/ugdupl.f")
 set(header "${build_dir}/generated/drivers/rotated.h")
 set(asset "${build_dir}/generated/drivers/cursor1.bmp")
 set(library "${build_dir}/libugs.a")
-foreach(path IN ITEMS "${aux}" "${postscr}" "${header}" "${asset}" "${library}")
+foreach(path IN ITEMS
+    "${aux}" "${postscr}" "${ugfont}" "${ugopen}" "${ugnucl}"
+    "${ugsimp}" "${ugdupl}"
+    "${header}" "${asset}" "${library}")
   assert_exists("${path}")
 endforeach()
 
@@ -171,6 +179,16 @@ assert_patch_anchor_rejected(
   "#if  ( defined(__LINUX_AOUT) || defined(__LINUX_ELF) || defined(__OSF1) ||\\\n       defined(__Darwin) )")
 assert_patch_anchor_rejected(
   postscript drivers/postscr.f "      CHARACTER*256 EXNM\n")
+assert_patch_anchor_rejected(
+  font-link-calls ugfont.f "C  SCAN THE OPTIONS LIST.\n      EXCG=0")
+assert_patch_anchor_rejected(
+  nucleus-link-call ugopen.F "C  SCAN THE OPTIONS LIST.\n      EXIX=0")
+assert_patch_anchor_rejected(
+  nucleus-link-anchor ugnucl.f "      END\n")
+assert_patch_anchor_rejected(
+  simplex-link-anchor ugsimp.f "      END\n")
+assert_patch_anchor_rejected(
+  duplex-link-anchor ugdupl.f "      END\n")
 assert_patch_anchor_rejected(
   x11-selftest drivers/xwindowc.c "main ()")
 assert_global_patch_anchor_rejected(
@@ -237,7 +255,10 @@ run_checked("Nested clean"
   "${CMAKE_COMMAND}" --build "${build_dir}" --target clean)
 run_checked("Rebuild after clean"
   "${CMAKE_COMMAND}" --build "${build_dir}" --parallel)
-foreach(path IN ITEMS "${aux}" "${postscr}" "${header}" "${asset}" "${library}")
+foreach(path IN ITEMS
+    "${aux}" "${postscr}" "${ugfont}" "${ugopen}" "${ugnucl}"
+    "${ugsimp}" "${ugdupl}"
+    "${header}" "${asset}" "${library}")
   assert_exists("${path}")
 endforeach()
 
@@ -246,6 +267,9 @@ run_checked("Nested clean_downloads"
 assert_exists("${TEST_ROOT}/archives/ugs.tar.gz")
 run_checked("Rebuild after clean_downloads"
   "${CMAKE_COMMAND}" --build "${build_dir}" --parallel)
-foreach(path IN ITEMS "${aux}" "${postscr}" "${header}" "${asset}" "${library}")
+foreach(path IN ITEMS
+    "${aux}" "${postscr}" "${ugfont}" "${ugopen}" "${ugnucl}"
+    "${ugsimp}" "${ugdupl}"
+    "${header}" "${asset}" "${library}")
   assert_exists("${path}")
 endforeach()

@@ -52,6 +52,17 @@ function(_replace_required content_var input description old_text new_text)
   set(${content_var} "${content}" PARENT_SCOPE)
 endfunction()
 
+function(_append_after_final_end_required content_var input description suffix)
+  set(content "${${content_var}}")
+  if(NOT content MATCHES "      END[\r\n]*$")
+    message(FATAL_ERROR
+      "Required UGS patch anchor not found (${description}): ${input}")
+  endif()
+  string(REGEX REPLACE "      END([\r\n]*)$" "      END\\1${suffix}"
+    content "${content}")
+  set(${content_var} "${content}" PARENT_SCOPE)
+endfunction()
+
 function(_copy_and_patch input abs_out)
   file(READ "${input}" _content)
   string(FIND "${_content}" "UGSYSTEM:" system_token_index)
@@ -86,6 +97,28 @@ function(_copy_and_patch input abs_out)
       _content "${input}" "PostScript filename persistence"
       "      CHARACTER*256 EXNM\n"
       "      CHARACTER*256 EXNM\n      SAVE          EXNM\n")
+  elseif(_name STREQUAL "ugfont.f")
+    _replace_required(
+      _content "${input}" "font block-data link calls"
+      "C  SCAN THE OPTIONS LIST.\n      EXCG=0"
+      "C  FORCE THE FONT BLOCK DATA OBJECTS INTO STATIC-LIBRARY LINKS.\n      CALL UGSLNKS\n      CALL UGSLNKD\nC\nC  SCAN THE OPTIONS LIST.\n      EXCG=0")
+  elseif(_name STREQUAL "ugopen.F")
+    _replace_required(
+      _content "${input}" "nucleus block-data link call"
+      "C  SCAN THE OPTIONS LIST.\n      EXIX=0"
+      "C  FORCE THE NUCLEUS BLOCK DATA OBJECT INTO STATIC-LIBRARY LINKS.\n      CALL UGSLNKN\nC\nC  SCAN THE OPTIONS LIST.\n      EXIX=0")
+  elseif(_name STREQUAL "ugnucl.f")
+    _append_after_final_end_required(
+      _content "${input}" "nucleus link anchor"
+      "\n      SUBROUTINE UGSLNKN\n      RETURN\n      END\n")
+  elseif(_name STREQUAL "ugsimp.f")
+    _append_after_final_end_required(
+      _content "${input}" "SIMPLEX font link anchor"
+      "\n      SUBROUTINE UGSLNKS\n      RETURN\n      END\n")
+  elseif(_name STREQUAL "ugdupl.f")
+    _append_after_final_end_required(
+      _content "${input}" "DUPLEX font link anchor"
+      "\n      SUBROUTINE UGSLNKD\n      RETURN\n      END\n")
   endif()
   _write_if_different("${abs_out}" "${_content}")
 endfunction()

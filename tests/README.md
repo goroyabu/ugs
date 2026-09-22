@@ -12,12 +12,13 @@ suite.
 | The repository-owned Xlib harness can open a viewable window | `01_smoke` | The process succeeds and prints the reviewed viewable-window message |
 | A representative UGS XWINDOW lifecycle and line-drawing path completes without a reported UGS error | `02_tryxw` | Initialization, device open and selection, line construction, write, and close complete with error level zero |
 | The X11 harness produces the reviewed reference frame in the controlled GUI smoke environment | `03_visual_smoke` | A fresh capture exactly matches `cases/03_visual_smoke/expected.ppm` |
-| The DUPLEX font supplies usable, distinct strokes for representative alphabetic and numeric characters | `04_duplex_glyph` | `A` and `2` both produce strokes and do not produce identical coordinates |
+| The built-in extended fonts and documented text-layout queries remain usable | `04_font_contract` | SIMPLEX and DUPLEX return finite, nonempty, distinct strokes for the same character; a Greek modifier changes the glyph; `LAST` and `NEXT` return the expected fixed-size positions; insufficient output capacity reports the documented recoverable error |
 | The POSTSCR driver honors its requested output name and preserves two requested line paths | `05_postscript_filename` | A fresh PostScript file has one completed page and the expected two move/line/stroke command sequences under explicit device geometry |
 | The documented POSTSCR lifecycle exposes stable open and active device state | `06_postscript_lifecycle` | `UGINFO` reports no device before open, the requested identifier and POSTSCR properties while open, and no device after close; each phase has a clear UGS error state |
 | An invalid two-point polygon reports a recoverable documented error | `07_invalid_polygon_error` | The process continues and `/UGERRD/` reports level 2, subroutine `UGPFIL`, and index 1 |
 | Drawing-space and window state round-trip through their public interfaces | `08_view_state` | `UGDSPC` and `UGWDOW` return the non-square drawing space, affinity, distinct view port, and world window that were set, within 16 scaled single-precision epsilons |
 | The current window maps and clips line geometry when a segment is written | `09_window_clipping` | Focused PostScript commands show an inside line at its mapped coordinates, a crossing line clipped to both window edges, and no path for an entirely outside line |
+| Extended text follows the documented stroke-conversion drawing path | `10_extended_text` | `UGXTXT` and `UGCTOL` followed by `UGPLIN` produce the same nonempty visible PostScript line geometry for a representative extended string |
 | An installed consumer can discover `ugs::ugs`, link it, and use a representative PostScript path | `package_smoke` | A clean staged install and consumer build succeed, and a fresh, nonempty `ugs-example.ps` has a PostScript header |
 | Selected upstream input is authenticated before use | `archive_hash.*` | Local, cached, and downloaded inputs obey the pinned SHA256 policy and the documented experimental exception |
 | Prepared upstream sources are incremental and generator-independent | `source_preparation.incremental` | An unchanged rebuild does not rewrite outputs, and a changed preparation input regenerates them with Make or Ninja |
@@ -34,31 +35,40 @@ policy described below.
 Functional cases prefer the pinned upstream programming manual and its routine
 contracts, followed by upstream interface descriptions and examples, reviewed
 behavior of the pinned source, and independently reproduced observations. The
-POSTSCR lifecycle, device properties, invalid-polygon error tuple, drawing-space
-and window state, write-time clipping, and line output in cases 05 through 09
-are based on `doc/ugpgmdoc.txt` from the pinned upstream archive. Source review
-is used to reconcile that historical manual with the acquired implementation;
-observed behavior alone does not create a compatibility promise.
+font selection, text conversion and positioning, POSTSCR lifecycle, device
+properties, invalid-polygon error tuple, drawing-space and window state,
+write-time clipping, line output, and extended-text equivalence in cases 04
+through 10 are based on `doc/ugpgmdoc.txt` from the pinned upstream archive.
+SIMPLEX minimizes the strokes used for each extended character; DUPLEX adds
+doubled strokes and serifs. Both are UGS stroke fonts rather than
+operating-system fonts. Source review is used to reconcile that historical
+manual with the acquired implementation; observed behavior alone does not
+create a compatibility promise.
 
 Fixtures are written for this repository rather than copied from upstream
 examples. Oracles check the narrowest stable public result available: device
-state and UGS error values for direct routine contracts, and selected page and
-drawing commands for PostScript output. Complete internal segment arrays,
-complete PostScript files, and rendered images are not snapshots unless a
-separate reviewed contract requires them.
+state, numeric text positions, stroke coordinates, and UGS error values for
+direct routine contracts, and selected page and drawing commands for
+PostScript output. The extended-text case compares only the visible drawing
+commands from the two documented construction paths. Complete internal segment
+arrays, complete PostScript files, and rendered images are not snapshots unless
+a separate reviewed contract requires them.
 
-The state round-trip checks reject non-finite values and allow 16
-single-precision epsilons scaled to the expected magnitude. This leaves a small
-margin for compiler and platform rounding while remaining far below the
-deliberate differences among the tested sizes, affinity, and coordinate bounds.
+The state round-trip and text-layout checks reject non-finite values and allow
+16 single-precision epsilons scaled to the expected magnitude. This leaves a
+small margin for compiler and platform rounding while remaining far below the
+deliberate differences among the tested sizes, affinity, coordinates, and
+layout positions.
 
 The representative functional domains are lifecycle and error handling, 2D
 primitives and coordinate/window behavior, fonts and text, file-driver output,
 and selected 3D or higher-level operations. The current baseline covers only a
-small part of each: lifecycle and one recoverable error have direct contracts;
-line output has focused coordinate mapping and clipping coverage; and two
-DUPLEX glyphs have focused coverage. Broader 2D primitives and segment
-operations, text layout, EPSF, and 3D contracts remain under Issue #36.
+small part of each: lifecycle and recoverable errors have direct contracts;
+line output has focused coordinate mapping and clipping coverage; and font
+selection, fixed-size layout queries, one conversion boundary, and a
+representative extended-text drawing path have focused coverage. Broader 2D
+primitives and segment operations, comprehensive font and text behavior, EPSF,
+and 3D contracts remain under Issue #36.
 
 ## Failure and Isolation Rules
 
@@ -66,9 +76,10 @@ UGS reports an error level from 1 (minor) through 4 (terminal). The
 representative XWINDOW test requires level zero after each checked operation;
 minor errors and warnings therefore fail the test as well. Some terminal UGS
 errors stop a Fortran program with a successful process exit status, so CTest
-also rejects the standard UGS error diagnostic. `07_invalid_polygon_error` is
-the deliberate exception: it causes a documented level-2 error and checks the
-full `/UGERRD/` tuple after control returns to the caller.
+also rejects the standard UGS error diagnostic where applicable.
+`04_font_contract` and `07_invalid_polygon_error` deliberately cause documented
+level-2 errors and check the full `/UGERRD/` tuple after control returns to the
+caller.
 
 File-producing tests remove their prior output before invoking the behavior
 under test. Visual, PostScript, package-consumer, archive, and source-preparation
@@ -85,7 +96,9 @@ The current baseline deliberately does not guarantee:
 - POSTSCR primitives other than representative straight lines;
 - the historical `UGINFO` `DIMENSION` query or the pinned source's
   `DPHYSIZE` extension, whose mismatch is not treated as a supported contract;
-- every glyph, font metric, text layout, or malformed-input case;
+- every glyph, font metric, text-layout option, or malformed-input case;
+- `UGTEXT` hardware-character generation, device-specific font substitution,
+  exact glyph appearance, or complete `UGXTXT` behavior;
 - EPSF behavior, whose available implementation is not described by the
   programming-manual POSTSCR section used for the current contracts;
 - shields, broader window/clipping combinations, segment operations,
@@ -119,7 +132,7 @@ XWINDOW path in required Linux CI.
 Dedicated Linux jobs repeat the display-independent suite through the
 `NET_FETCH=OFF` local-archive path and with CMake 3.15.7. The package test in
 each applicable job performs a clean staged installation and downstream
-consumer build. Cases 04 through 09 are display-independent and therefore run
+consumer build. Cases 04 through 10 are display-independent and therefore run
 in the normal supported selection without an X server. Broader functional and
 graphics contracts are tracked in
 [the layered coverage follow-up](https://github.com/goroyabu/ugs/issues/36);
