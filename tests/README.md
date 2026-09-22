@@ -20,6 +20,7 @@ suite.
 | The current window maps and clips line geometry when a segment is written | `09_window_clipping` | Focused PostScript commands show an inside line at its mapped coordinates, a crossing line clipped to both window edges, and no path for an entirely outside line |
 | Extended text follows the documented stroke-conversion drawing path | `10_extended_text` | `UGXTXT` and `UGCTOL` followed by `UGPLIN` produce the same nonempty visible PostScript line geometry for a representative extended string |
 | Public 3D view and projection state remains usable through a representative line path | `11_3d_projection` | `UG3WRD` and `UG3TRN` round-trip reviewed state; a new picture preserves the 3D world state and resets the transformation state; `UG3PLN` produces the reviewed parallel-projection commands and a distinct visible point projection |
+| Documented algorithm entry points retain their complete internal link dependencies | `12_algorithm_linkage` | A normal `ugs` link resolves `UGTRAN`, `UGQCTR`, `UGMESH`, `UG2DHG`, and `UG2DHP`; a representative parallel `UGTRAN` call returns a finite, populated transformation |
 | An installed consumer can discover `ugs::ugs`, link it, and use a representative PostScript path | `package_smoke` | A clean staged install and consumer build succeed, and a fresh, nonempty `ugs-example.ps` has a PostScript header |
 | Selected upstream input is authenticated before use | `archive_hash.*` | Local, cached, and downloaded inputs obey the pinned SHA256 policy and the documented experimental exception |
 | Prepared upstream sources are incremental and generator-independent | `source_preparation.incremental` | An unchanged rebuild does not rewrite outputs, and a changed preparation input regenerates them with Make or Ninja |
@@ -57,6 +58,13 @@ parallel-projection command sequence but checks point projection by command
 shape and visible divergence, avoiding a broad coordinate snapshot. Complete
 internal segment arrays, complete PostScript files, and rendered images are not
 snapshots unless a separate reviewed contract requires them.
+
+The algorithm-linkage case is based on the documented `UGTRAN`, `UGQCTR`,
+`UGMESH`, `UG2DHG`, and `UG2DHP` interfaces in `doc/ugalgdoc.txt`. It requires
+the public entry points and their original upstream helper implementations to
+resolve through a normal static-library link. Its runtime oracle is limited to
+a representative `UGTRAN` result; it does not establish mesh, contour, or
+histogram drawing semantics.
 
 The state round-trip and text-layout checks reject non-finite values and allow
 16 single-precision epsilons scaled to the expected magnitude. This leaves a
@@ -107,8 +115,9 @@ The current baseline deliberately does not guarantee:
 - EPSF behavior, whose available implementation is not described by the
   programming-manual POSTSCR section used for the current contracts;
 - shields, broader window/clipping combinations, or segment operations;
-- standalone `UGTRAN` and `UGPROJ` behavior, broad 3D clipping, 3D text,
-  mesh and contour operations, or other higher-level 3D behavior;
+- comprehensive `UGTRAN` and `UGPROJ` behavior, broad 3D clipping, 3D text,
+  mesh and contour drawing semantics, histogram output semantics, or other
+  higher-level 3D behavior beyond the focused linkage and `UGTRAN` checks;
 - Windows, cross-compilation, non-GNU Fortran compilers, or shared libraries;
 - X11 behavior on macOS CI, where display-dependent tests are not run; or
 - F2C language conformance or F2C's project-specific test matrix.
@@ -138,7 +147,7 @@ XWINDOW path in required Linux CI.
 Dedicated Linux jobs repeat the display-independent suite through the
 `NET_FETCH=OFF` local-archive path and with CMake 3.15.7. The package test in
 each applicable job performs a clean staged installation and downstream
-consumer build. Cases 04 through 11 are display-independent and therefore run
+consumer build. Cases 04 through 12 are display-independent and therefore run
 in the normal supported selection without an X server. Broader functional and
 graphics contracts are tracked in
 [the layered coverage follow-up](https://github.com/goroyabu/ugs/issues/36);

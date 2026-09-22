@@ -164,6 +164,9 @@ set(ugopen "${build_dir}/generated/ugopen.F")
 set(ugnucl "${build_dir}/generated/ugnucl.f")
 set(ugsimp "${build_dir}/generated/ugsimp.f")
 set(ugdupl "${build_dir}/generated/ugdupl.f")
+set(algorithm_helpers
+  ug2dh1.f ug2dh2.f ug2dh3.f ug2dh4.f ug2dh5.f ug2dh6.f ug2dh7.f
+  ugmes1.f ugmes2.f ugmes3.f ugmes4.f ugqct1.f ugtrn1.f ugtrn2.f)
 set(header "${build_dir}/generated/drivers/rotated.h")
 set(asset "${build_dir}/generated/drivers/cursor1.bmp")
 set(library "${build_dir}/libugs.a")
@@ -172,6 +175,9 @@ foreach(path IN ITEMS
     "${ugsimp}" "${ugdupl}"
     "${header}" "${asset}" "${library}")
   assert_exists("${path}")
+endforeach()
+foreach(helper IN LISTS algorithm_helpers)
+  assert_exists("${build_dir}/generated/${helper}")
 endforeach()
 
 assert_patch_anchor_rejected(

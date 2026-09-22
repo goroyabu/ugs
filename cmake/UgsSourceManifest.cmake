@@ -1,7 +1,9 @@
 # Canonical inventory for sources prepared from the pinned upstream UGS archive.
 # This file is included by both project configuration and CMake script mode.
 set(UGS_SOURCE_NAMES
-  aux.c ran.f ug2dhg.f ug2dhp.f ug3lin.f ug3mrk.f ug3pln.f ug3pmk.f
+  aux.c ran.f
+  ug2dh1.f ug2dh2.f ug2dh3.f ug2dh4.f ug2dh5.f ug2dh6.f ug2dh7.f
+  ug2dhg.f ug2dhp.f ug3lin.f ug3mrk.f ug3pln.f ug3pmk.f
   ug3trn.f ug3txt.f ug3wrd.f ugb001.f ugb002.f ugb003.f ugb004.f ugb005.f
   ugb006.f ugb007.f ugb008.f ugb009.f ugb010.f ugb011.f ugb012.f ugb013.f
   ugb014.f ugb015.f ugc001.f ugc002.f ugc003.f ugc004.f ugc005.f ugc006.f
@@ -10,9 +12,10 @@ set(UGS_SOURCE_NAMES
   ugdupl.f uge001.f uge003.f ugectl.f ugenab.f ugevnt.f ugf001.f ugf002.f
   ugf003.f ugf004.f ugfont.f ugg001.f ugg002.f ugg003.f ugg004.f ugg005.f
   uginfo.f uginit.f uglgax.f uglgdx.f ugline.f uglnax.f uglndx.f ugmark.f
-  ugmctl.f  ugmesh.f ugnucl.f ugoption.f ugpfil.f ugpict.f ugplin.f ugpmrk.f
-  ugproj.f ugqctr.f ugrerr.f ugscin.f ugshld.f ugsimp.f ugslct.f ugtext.f
-  ugtran.f ugwdow.f ugwrit.f ugxerr.f ugxhch.f ugxsym.f ugxtxt.f ugz001.f
+  ugmctl.f ugmes1.f ugmes2.f ugmes3.f ugmes4.f ugmesh.f ugnucl.f ugoption.f
+  ugpfil.f ugpict.f ugplin.f ugpmrk.f ugproj.f ugqct1.f ugqctr.f ugrerr.f
+  ugscin.f ugshld.f ugsimp.f ugslct.f ugtext.f ugtran.f ugtrn1.f ugtrn2.f
+  ugwdow.f ugwrit.f ugxerr.f ugxhch.f ugxsym.f ugxtxt.f ugz001.f
   ugz002.f ugz003.f ugz006.f uge002.F ugfrev.F uggetv.F ugopen.F ugz005.F
   bit/btest.c bit/iand.c bit/ibclr.c bit/ibset.c bit/ior.c bit/ishft.c bit/ishftc.c
   drivers/epsf.f drivers/postscr.f drivers/rotated.c
